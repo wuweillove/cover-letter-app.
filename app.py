@@ -22,7 +22,7 @@ if st.button("Generate Letter"):
     else:
         with st.spinner("Thinking..."):
             try:
-                model = genai.GenerativeModel('gemini-pro')
+                model = genai.GenerativeModel('gemini-1.5-flash')
 
                 prompt = f"Write a professional cover letter for this resume: {resume} \n for this job: {job}"
                 response = model.generate_content(prompt)
