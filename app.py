@@ -25,7 +25,8 @@ if st.button("🚀 Generate Letter"):
         with st.spinner("Writing your letter using Gemini 2.0..."):
             try:
                 # WE USE THE EXACT MODEL NAME FOUND IN YOUR LIST
-                model = genai.GenerativeModel('gemini-2.0-flash')
+                # Use the "latest" alias which usually has the best free tier availability
+model = genai.GenerativeModel('gemini-flash-latest')
                 
                 prompt = f"""
                 You are an expert career coach. Write a professional, persuasive cover letter 
