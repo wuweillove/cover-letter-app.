@@ -227,7 +227,7 @@ def check_rate_limit() -> bool:
 
 def generate_cover_letter(resume: str, job: str, tone: str, length: int,
                          emphasis_areas: List[str]) -> Optional[str]:
-    """Generate cover letter using AI with error handling."""
+    """Generate cover letter using AI with error handling and fallback models."""
     try:
         # Extract keywords
         keywords = extract_keywords(job)
@@ -235,35 +235,81 @@ def generate_cover_letter(resume: str, job: str, tone: str, length: int,
         # Create enhanced prompt
         prompt = create_enhanced_prompt(resume, job, tone, length, keywords, emphasis_areas)
         
-        # Generate with retry logic
-        max_retries = 3
-        for attempt in range(max_retries):
-            try:
-                model = genai.GenerativeModel('gemini-1.5-flash')
-                response = model.generate_content(
-                    prompt,
-                    generation_config=genai.types.GenerationConfig(
-                        temperature=0.7,
-                        top_p=0.9,
-                        top_k=40,
-                        max_output_tokens=2048,
+        # Define fallback model names in order of preference
+        # Using full path format for v1 stable API compatibility
+        model_names = [
+            'models/gemini-1.5-flash',      # Correct v1 API format (preferred)
+            'gemini-1.5-flash-latest',      # Latest version fallback
+            'gemini-1.5-flash',             # Legacy format (last resort)
+        ]
+        
+        last_error = None
+        
+        # Try each model variant
+        for model_idx, model_name in enumerate(model_names):
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    model = genai.GenerativeModel(model_name)
+                    response = model.generate_content(
+                        prompt,
+                        generation_config=genai.types.GenerationConfig(
+                            temperature=0.7,
+                            top_p=0.9,
+                            top_k=40,
+                            max_output_tokens=2048,
+                        )
                     )
-                )
-                
-                if response and response.text:
-                    return response.text
                     
-            except Exception as e:
-                if attempt == max_retries - 1:
-                    raise
-                time.sleep(2 ** attempt)  # Exponential backoff
+                    if response and response.text:
+                        # Log successful model if not first attempt
+                        if model_idx > 0:
+                            print(f"[INFO] Successfully used fallback model: {model_name}")
+                        return response.text
+                        
+                except Exception as e:
+                    last_error = e
+                    error_msg = str(e).lower()
+                    
+                    # Check if it's a model-not-found error
+                    if "404" in error_msg or "not found" in error_msg or "does not exist" in error_msg:
+                        print(f"[WARNING] Model '{model_name}' not found, trying next variant...")
+                        break  # Try next model variant
+                    
+                    # Check if it's a quota error (don't retry other models)
+                    if "quota" in error_msg or "rate limit" in error_msg:
+                        raise  # Propagate quota errors immediately
+                    
+                    # For other errors, retry with exponential backoff
+                    if attempt < max_retries - 1:
+                        wait_time = 2 ** attempt
+                        print(f"[WARNING] Attempt {attempt + 1} failed, retrying in {wait_time}s...")
+                        time.sleep(wait_time)
+                    else:
+                        # Last retry for this model, try next variant
+                        print(f"[WARNING] All retries exhausted for model '{model_name}'")
+                        break
+        
+        # If we get here, all models failed
+        if last_error:
+            raise last_error
         
         return None
         
     except Exception as e:
-        st.error(f"❌ Generation failed: {str(e)}")
-        if "quota" in str(e).lower():
-            st.error("⚠️ API quota exceeded. Please try again later or check your API key.")
+        error_msg = str(e)
+        st.error(f"❌ Generation failed: {error_msg}")
+        
+        # Provide specific guidance based on error type
+        if "quota" in error_msg.lower() or "rate limit" in error_msg.lower():
+            st.error("⚠️ API quota exceeded. Please try again later or check your API key limits.")
+        elif "404" in error_msg or "not found" in error_msg.lower():
+            st.error("⚠️ Model not available. The Gemini API might be experiencing issues. Please try again in a few minutes.")
+        elif "api key" in error_msg.lower() or "authentication" in error_msg.lower():
+            st.error("⚠️ API key authentication failed. Please check your GOOGLE_API_KEY in Streamlit secrets.")
+        else:
+            st.error("⚠️ An unexpected error occurred. Please try again or contact support if the issue persists.")
+        
         return None
 
 def create_txt_download(content: str) -> BytesIO:
