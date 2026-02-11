@@ -10,11 +10,12 @@ class ProfileManager:
             st.session_state.user_profile = self._load_profile()
     
     def _load_profile(self):
-        """Load profile from session state or create default."""
-        # In production, this could load from a database or file
+        """Load profile from session state or create default with EMPTY values."""
+        # IMPORTANT: All default values MUST be empty to protect privacy
+        # Never use real names or personal information as defaults
         return {
-            'name': '',
-            'email': '',
+            'name': '',  # NO DEFAULT NAME - user must enter their own
+            'email': '',  # NO DEFAULT EMAIL - user must enter their own
             'phone': '',
             'location': '',
             'linkedin': '',
@@ -45,7 +46,18 @@ class ProfileManager:
         return True
     
     def clear_profile(self):
-        """Clear all profile data."""
+        """Clear all profile data - PRIVACY RESET."""
+        st.session_state.user_profile = self._load_profile()
+        return True
+    
+    def reset_to_defaults(self):
+        """Complete privacy reset - clear all personal data."""
+        # Clear the profile
+        self.clear_profile()
+        # Also clear from session state completely
+        if 'user_profile' in st.session_state:
+            del st.session_state.user_profile
+        # Reinitialize with empty values
         st.session_state.user_profile = self._load_profile()
         return True
     
