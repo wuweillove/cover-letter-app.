@@ -239,7 +239,7 @@ def generate_cover_letter(resume: str, job: str, tone: str, length: int,
         max_retries = 3
         for attempt in range(max_retries):
             try:
-                model = genai.GenerativeModel('gemini-1.5-flash')
+                model = genai.GenerativeModel('gemini-flash-latest')
                 response = model.generate_content(
                     prompt,
                     generation_config=genai.types.GenerationConfig(
