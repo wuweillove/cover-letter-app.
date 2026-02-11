@@ -54,3 +54,36 @@ htmlcov/
 *.tmp
 *.bak
 *.cache
+
+# ============================================
+# PRIVACY & USER DATA - NEVER COMMIT THESE!
+# ============================================
+
+# User profile data
+user_profiles.json
+profiles.db
+user_data/
+*_profile.json
+
+# Generated cover letters and user content
+generated_letters/
+user_letters/
+letter_history.json
+versions.json
+
+# Cached session data
+session_data/
+.streamlit_cache/
+
+# Any files with personal information
+*sebastian*
+*llovera*
+*personal*
+*private*
+
+# User uploads
+uploads/
+user_uploads/
+resumes/
+*.pdf
+*.docx
