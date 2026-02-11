@@ -4,7 +4,7 @@ import datetime
 import re
 import json
 from io import BytesIO
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 import time
 
 # File processing imports
@@ -49,7 +49,7 @@ TRANSLATIONS = {
         "pro_tips": "💡 Pro Tips",
         "pro_tips_content": """**For Best Results:**
 - Include quantifiable achievements in your resume
-- Copy the complete job description
+- Copy the complete job description (no character limits!)
 - Select tone that matches company culture
 - Review and customize the generated letter
 - Use keywords from the job description""",
@@ -96,7 +96,7 @@ Include:
 • Skills
 • Achievements
 • Education""",
-        "resume_help": "Maximum {max} characters",
+        "resume_help": "Recommended max {max} characters (can exceed if needed)",
         "job_label": "Job Description",
         "job_placeholder": """Paste the complete job description here...
 
@@ -104,15 +104,17 @@ Include:
 • Role requirements
 • Responsibilities
 • Required skills
-• Company information""",
-        "job_help": "Maximum {max} characters",
+• Company information
+
+No character limits - paste the full job posting!""",
+        "job_help": "No character limit - paste the complete job posting",
         "upload_resume": "📎 Or Upload Resume (PDF/DOCX)",
         "upload_job": "📎 Or Paste Job URL",
         "url_placeholder": "https://example.com/job-posting",
         "extract_url": "🔗 Extract from URL",
         "save_draft": "💾 Save Draft",
         "draft_saved": "✅ Draft saved!",
-        "approaching_limit": "⚠️ Approaching character limit",
+        "long_text_notice": "ℹ️ Long text detected ({chars} chars) - will be intelligently processed",
         "characters": "characters",
         "keywords_header": "🔍 Detected Keywords from Job Description",
         "keywords_footer": "✨ These keywords will be naturally incorporated into your letter for ATS optimization",
@@ -148,7 +150,7 @@ Include:
         "guide_content": """### 🎯 Quick Start Guide
 
 1. **Prepare Your Resume**: Copy your resume or relevant work experience
-2. **Get Job Description**: Copy the complete job posting you're applying for
+2. **Get Job Description**: Copy the COMPLETE job posting - no character limits!
 3. **Choose Settings**: Select tone, length, and emphasis areas in the sidebar
 4. **Generate**: Click the generate button and wait for your personalized letter
 5. **Review & Edit**: Customize the generated letter to add your personal touch
@@ -163,9 +165,10 @@ Include:
 - Keep it concise but comprehensive
 
 **Job Description:**
-- Copy the entire job posting
+- Copy the ENTIRE job posting - no need to truncate!
 - Include company information if available
 - Don't edit or summarize - let the AI identify key points
+- The app intelligently processes even very long job descriptions
 
 **Tone Selection:**
 - **Professional & Formal**: Traditional corporate environments, finance, law
@@ -183,7 +186,7 @@ Include:
 
 ### 🚀 Pro Tips
 
-- **Customize keywords**: Make sure the job description includes the specific keywords you want to highlight
+- **Paste complete job descriptions**: The app handles long texts intelligently
 - **Multiple versions**: Generate several versions and combine the best parts
 - **Personal touch**: Always add a specific detail about why you're interested in THIS company
 - **Proofread**: AI is great, but human review is essential
@@ -200,7 +203,7 @@ Include:
 
 If you encounter issues:
 - Check that both resume and job description are filled
-- Ensure you're not exceeding character limits
+- Very long texts are automatically optimized - no truncation needed
 - Wait at least 10 seconds between generations
 - Try refreshing the page if something seems stuck""",
         
@@ -209,8 +212,6 @@ If you encounter issues:
         "error_empty_job": "❌ Job description cannot be empty.",
         "error_short_resume": "❌ Resume seems too short. Please provide more details.",
         "error_short_job": "❌ Job description seems too short. Please provide more details.",
-        "error_long_resume": "❌ Resume exceeds maximum length of {max} characters.",
-        "error_long_job": "❌ Job description exceeds maximum length of {max} characters.",
         "error_rate_limit": "⏳ Please wait {seconds} seconds between generations to prevent abuse.",
         "error_generation": "❌ Generation failed: {error}",
         "error_quota": "⚠️ API quota exceeded. Please try again later or check your API key.",
@@ -253,7 +254,7 @@ If you encounter issues:
         "pro_tips": "💡 Consejos Profesionales",
         "pro_tips_content": """**Para Mejores Resultados:**
 - Incluye logros cuantificables en tu currículum
-- Copia la descripción completa del trabajo
+- Copia la descripción completa del trabajo (¡sin límites de caracteres!)
 - Selecciona el tono que coincida con la cultura de la empresa
 - Revisa y personaliza la carta generada
 - Usa palabras clave de la descripción del trabajo""",
@@ -300,7 +301,7 @@ Incluye:
 • Habilidades
 • Logros
 • Educación""",
-        "resume_help": "Máximo {max} caracteres",
+        "resume_help": "Máximo recomendado {max} caracteres (puede exceder si es necesario)",
         "job_label": "Descripción del Trabajo",
         "job_placeholder": """Pega la descripción completa del trabajo aquí...
 
@@ -308,15 +309,17 @@ Incluye:
 • Requisitos del puesto
 • Responsabilidades
 • Habilidades requeridas
-• Información de la empresa""",
-        "job_help": "Máximo {max} caracteres",
+• Información de la empresa
+
+¡Sin límites de caracteres - pega la oferta completa!""",
+        "job_help": "Sin límite de caracteres - pega la descripción completa del trabajo",
         "upload_resume": "📎 O Sube Currículum (PDF/DOCX)",
         "upload_job": "📎 O Pega URL del Trabajo",
         "url_placeholder": "https://ejemplo.com/oferta-trabajo",
         "extract_url": "🔗 Extraer de URL",
         "save_draft": "💾 Guardar Borrador",
         "draft_saved": "✅ ¡Borrador guardado!",
-        "approaching_limit": "⚠️ Acercándose al límite de caracteres",
+        "long_text_notice": "ℹ️ Texto largo detectado ({chars} carac.) - será procesado inteligentemente",
         "characters": "caracteres",
         "keywords_header": "🔍 Palabras Clave Detectadas de la Descripción del Trabajo",
         "keywords_footer": "✨ Estas palabras clave se incorporarán naturalmente en tu carta para optimización ATS",
@@ -352,7 +355,7 @@ Incluye:
         "guide_content": """### 🎯 Guía de Inicio Rápido
 
 1. **Prepara Tu Currículum**: Copia tu currículum o experiencia laboral relevante
-2. **Obtén la Descripción del Trabajo**: Copia la oferta de trabajo completa a la que estás postulando
+2. **Obtén la Descripción del Trabajo**: Copia la oferta de trabajo COMPLETA - ¡sin límites de caracteres!
 3. **Elige Configuración**: Selecciona tono, longitud y áreas de énfasis en la barra lateral
 4. **Genera**: Haz clic en el botón de generar y espera tu carta personalizada
 5. **Revisa y Edita**: Personaliza la carta generada para agregar tu toque personal
@@ -367,9 +370,10 @@ Incluye:
 - Manténlo conciso pero completo
 
 **Descripción del Trabajo:**
-- Copia la oferta de trabajo completa
+- Copia la oferta de trabajo COMPLETA - ¡no necesitas truncar!
 - Incluye información de la empresa si está disponible
 - No edites ni resumas - deja que la IA identifique los puntos clave
+- La app procesa inteligentemente incluso descripciones muy largas
 
 **Selección de Tono:**
 - **Profesional y Formal**: Entornos corporativos tradicionales, finanzas, derecho
@@ -387,7 +391,7 @@ Incluye:
 
 ### 🚀 Consejos Profesionales
 
-- **Personaliza palabras clave**: Asegúrate de que la descripción del trabajo incluya las palabras clave específicas que deseas resaltar
+- **Pega descripciones completas**: La app maneja textos largos inteligentemente
 - **Múltiples versiones**: Genera varias versiones y combina las mejores partes
 - **Toque personal**: Siempre agrega un detalle específico sobre por qué estás interesado en ESTA empresa
 - **Revisa**: La IA es excelente, pero la revisión humana es esencial
@@ -404,7 +408,7 @@ Incluye:
 
 Si encuentras problemas:
 - Verifica que tanto el currículum como la descripción del trabajo estén completos
-- Asegúrate de no exceder los límites de caracteres
+- Los textos muy largos se optimizan automáticamente - no necesitas truncar
 - Espera al menos 10 segundos entre generaciones
 - Intenta actualizar la página si algo parece atascado""",
         
@@ -413,8 +417,6 @@ Si encuentras problemas:
         "error_empty_job": "❌ La descripción del trabajo no puede estar vacía.",
         "error_short_resume": "❌ El currículum parece demasiado corto. Por favor, proporciona más detalles.",
         "error_short_job": "❌ La descripción del trabajo parece demasiado corta. Por favor, proporciona más detalles.",
-        "error_long_resume": "❌ El currículum excede la longitud máxima de {max} caracteres.",
-        "error_long_job": "❌ La descripción del trabajo excede la longitud máxima de {max} caracteres.",
         "error_rate_limit": "⏳ Por favor, espera {seconds} segundos entre generaciones para prevenir abuso.",
         "error_generation": "❌ Error en la generación: {error}",
         "error_quota": "⚠️ Cuota de API excedida. Por favor, inténtalo más tarde o verifica tu clave API.",
@@ -500,14 +502,26 @@ st.markdown("""
         color: #666;
         text-align: right;
     }
+    .info-badge {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        border-left: 4px solid #17a2b8;
+        margin: 0.5rem 0;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 # --- CONSTANTS ---
 DONATION_LINK = "https://www.buymeacoffee.com/coverletter"
-MAX_RESUME_CHARS = 5000
-MAX_JOB_CHARS = 5000
+# Increased limits - but with intelligent processing
+MAX_RESUME_CHARS = 15000  # Increased from 5000
+MAX_JOB_CHARS = 50000     # Increased from 5000 - allows full job descriptions
+RECOMMENDED_RESUME_CHARS = 8000
+RECOMMENDED_JOB_CHARS = 15000
 RATE_LIMIT_SECONDS = 10
+# Gemini Flash context window is ~1M tokens, so these limits are safe
 
 # --- TONE CONFIGURATIONS ---
 def get_tone_profiles():
@@ -661,6 +675,95 @@ def extract_job_from_url(url: str) -> str:
     except Exception as e:
         raise Exception(str(e))
 
+# --- INTELLIGENT TEXT PROCESSING ---
+
+def smart_truncate_text(text: str, max_chars: int, preserve_sentences: bool = True) -> str:
+    """
+    Intelligently truncate text while preserving meaning.
+    Tries to break at sentence boundaries when possible.
+    """
+    if len(text) <= max_chars:
+        return text
+    
+    if preserve_sentences:
+        # Try to break at sentence boundaries
+        sentences = re.split(r'[.!?]\s+', text[:max_chars + 500])
+        result = ""
+        for sentence in sentences:
+            if len(result) + len(sentence) + 2 <= max_chars:
+                result += sentence + ". "
+            else:
+                break
+        if result:
+            return result.strip()
+    
+    # Fallback: simple truncation at word boundary
+    truncated = text[:max_chars].rsplit(' ', 1)[0]
+    return truncated + "..."
+
+def extract_most_relevant_job_sections(job_text: str, max_chars: int = 20000) -> str:
+    """
+    Extract the most relevant sections from a long job description.
+    Prioritizes: requirements, responsibilities, qualifications, skills.
+    """
+    if len(job_text) <= max_chars:
+        return job_text
+    
+    # Section headers to look for (case insensitive)
+    important_sections = [
+        r'(?i)(requirements?|required|qualifications?|must have)',
+        r'(?i)(responsibilities?|duties|role|what you.?ll do)',
+        r'(?i)(skills?|competenc(?:ies|y)|abilities)',
+        r'(?i)(preferred|nice to have|bonus)',
+        r'(?i)(about (the )?(role|position|job))',
+        r'(?i)(about (us|the company|our team))',
+    ]
+    
+    # Try to extract sections
+    extracted_sections = []
+    total_length = 0
+    
+    for pattern in important_sections:
+        matches = list(re.finditer(pattern, job_text))
+        for match in matches:
+            start = match.start()
+            # Get text from section header to next section or 1000 chars
+            end = start + 1500
+            section_text = job_text[start:end]
+            
+            # Find natural break point
+            natural_break = re.search(r'\n\n', section_text)
+            if natural_break and natural_break.start() > 200:
+                section_text = section_text[:natural_break.start()]
+            
+            if section_text and section_text not in extracted_sections:
+                if total_length + len(section_text) <= max_chars:
+                    extracted_sections.append(section_text)
+                    total_length += len(section_text)
+    
+    if extracted_sections:
+        return "\n\n".join(extracted_sections)
+    
+    # Fallback: return first portion of text
+    return smart_truncate_text(job_text, max_chars)
+
+def optimize_text_for_ai(text: str, text_type: str = "job", target_chars: int = None) -> Tuple[str, bool]:
+    """
+    Optimize text for AI processing. Returns (optimized_text, was_truncated).
+    """
+    if text_type == "job":
+        max_chars = target_chars or RECOMMENDED_JOB_CHARS
+        if len(text) > max_chars:
+            optimized = extract_most_relevant_job_sections(text, max_chars)
+            return optimized, True
+    else:  # resume
+        max_chars = target_chars or RECOMMENDED_RESUME_CHARS
+        if len(text) > max_chars:
+            optimized = smart_truncate_text(text, max_chars)
+            return optimized, True
+    
+    return text, False
+
 # --- HELPER FUNCTIONS ---
 
 def sanitize_input(text: str) -> str:
@@ -698,7 +801,7 @@ def extract_keywords(text: str, top_n: int = 10) -> List[str]:
     return [word for word, _ in sorted_words[:top_n]]
 
 def validate_inputs(resume: str, job: str) -> tuple[bool, str]:
-    """Validate user inputs."""
+    """Validate user inputs with relaxed character limits."""
     if not resume or not resume.strip():
         return False, t("error_empty_resume")
     if not job or not job.strip():
@@ -707,10 +810,7 @@ def validate_inputs(resume: str, job: str) -> tuple[bool, str]:
         return False, t("error_short_resume")
     if len(job) < 50:
         return False, t("error_short_job")
-    if len(resume) > MAX_RESUME_CHARS:
-        return False, t("error_long_resume", max=MAX_RESUME_CHARS)
-    if len(job) > MAX_JOB_CHARS:
-        return False, t("error_long_job", max=MAX_JOB_CHARS)
+    # Removed hard character limits - will use intelligent processing instead
     return True, ""
 
 def create_enhanced_prompt(resume: str, job: str, tone: str, length: int, 
@@ -787,11 +887,15 @@ def generate_cover_letter(resume: str, job: str, tone: str, length: int,
                          emphasis_areas: List[str], language: str) -> Optional[str]:
     """Generate cover letter using AI with error handling."""
     try:
-        # Extract keywords
-        keywords = extract_keywords(job)
+        # Optimize texts for AI processing
+        optimized_resume, resume_truncated = optimize_text_for_ai(resume, "resume")
+        optimized_job, job_truncated = optimize_text_for_ai(job, "job")
+        
+        # Extract keywords from optimized job text
+        keywords = extract_keywords(optimized_job)
         
         # Create enhanced prompt
-        prompt = create_enhanced_prompt(resume, job, tone, length, keywords, emphasis_areas, language)
+        prompt = create_enhanced_prompt(optimized_resume, optimized_job, tone, length, keywords, emphasis_areas, language)
         
         # Generate with retry logic
         max_retries = 3
@@ -936,14 +1040,20 @@ with tab1:
             value=st.session_state.draft_resume,
             height=300,
             placeholder=t("resume_placeholder"),
-            help=t("resume_help", max=MAX_RESUME_CHARS)
+            help=t("resume_help", max=RECOMMENDED_RESUME_CHARS)
         )
         resume_char_count = len(resume_input)
-        st.markdown(f'<div class="counter">{resume_char_count}/{MAX_RESUME_CHARS} {t("characters")}</div>', 
-                   unsafe_allow_html=True)
         
-        if resume_char_count > MAX_RESUME_CHARS * 0.9:
-            st.warning(t("approaching_limit"))
+        # Show character count with color coding
+        if resume_char_count > MAX_RESUME_CHARS:
+            st.markdown(f'<div class="counter" style="color: #dc3545;">{resume_char_count} {t("characters")} (will be optimized)</div>', 
+                       unsafe_allow_html=True)
+        elif resume_char_count > RECOMMENDED_RESUME_CHARS:
+            st.markdown(f'<div class="counter" style="color: #ffc107;">{resume_char_count} {t("characters")}</div>', 
+                       unsafe_allow_html=True)
+        else:
+            st.markdown(f'<div class="counter">{resume_char_count} {t("characters")}</div>', 
+                       unsafe_allow_html=True)
         
         # File upload for resume
         uploaded_resume = st.file_uploader(
@@ -970,14 +1080,20 @@ with tab1:
             value=st.session_state.draft_job,
             height=300,
             placeholder=t("job_placeholder"),
-            help=t("job_help", max=MAX_JOB_CHARS)
+            help=t("job_help")
         )
         job_char_count = len(job_input)
-        st.markdown(f'<div class="counter">{job_char_count}/{MAX_JOB_CHARS} {t("characters")}</div>', 
-                   unsafe_allow_html=True)
         
-        if job_char_count > MAX_JOB_CHARS * 0.9:
-            st.warning(t("approaching_limit"))
+        # Show character count with informative messaging
+        if job_char_count > MAX_JOB_CHARS:
+            st.markdown(f'<div class="counter" style="color: #dc3545;">{job_char_count} {t("characters")} (will be intelligently processed)</div>', 
+                       unsafe_allow_html=True)
+        elif job_char_count > RECOMMENDED_JOB_CHARS:
+            st.markdown(f'<div class="info-badge">{t("long_text_notice", chars=job_char_count)}</div>', 
+                       unsafe_allow_html=True)
+        else:
+            st.markdown(f'<div class="counter">{job_char_count} {t("characters")}</div>', 
+                       unsafe_allow_html=True)
         
         # URL extraction for job description
         st.markdown(f"**{t('upload_job')}**")
@@ -1016,7 +1132,9 @@ with tab1:
     # Keyword preview
     if job_input:
         with st.expander(t("keywords_header")):
-            keywords = extract_keywords(job_input, 15)
+            # Extract keywords from original or optimized text
+            display_job = job_input if len(job_input) <= RECOMMENDED_JOB_CHARS else job_input[:RECOMMENDED_JOB_CHARS]
+            keywords = extract_keywords(display_job, 15)
             if keywords:
                 keyword_html = "".join([f'<span class="keyword-badge">{k}</span>' for k in keywords])
                 st.markdown(keyword_html, unsafe_allow_html=True)
@@ -1035,7 +1153,7 @@ with tab1:
         resume_clean = sanitize_input(resume_input)
         job_clean = sanitize_input(job_input)
         
-        # Validate
+        # Validate (with relaxed limits)
         is_valid, error_msg = validate_inputs(resume_clean, job_clean)
         
         if not is_valid:
@@ -1044,7 +1162,7 @@ with tab1:
             st.warning(t("error_rate_limit", seconds=RATE_LIMIT_SECONDS))
         else:
             # Log generation event
-            print(f"[{datetime.datetime.now()}] 💰 Letter generated - Tone: {selected_tone}, Length: {selected_length}, Language: {st.session_state.language}")
+            print(f"[{datetime.datetime.now()}] 💰 Letter generated - Tone: {selected_tone}, Length: {selected_length}, Language: {st.session_state.language}, Resume: {len(resume_clean)} chars, Job: {len(job_clean)} chars")
             
             # Generate with progress
             with st.spinner(t("generating")):
