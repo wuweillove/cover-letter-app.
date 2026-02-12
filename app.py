@@ -16,6 +16,7 @@ from utils.pdf_exporter import PDFExporter
 from utils.scoring import LetterScorer
 from utils.ai_generator import AIGenerator
 from utils.version_manager import VersionManager
+from utils.translations import get_text, get_language_display_names
 import datetime
 import time
 
@@ -42,6 +43,9 @@ if 'generated_versions' not in st.session_state:
     st.session_state.generated_versions = []
 if 'show_success_modal' not in st.session_state:
     st.session_state.show_success_modal = False
+# Initialize language if not set
+if 'language' not in st.session_state:
+    st.session_state.language = 'en'
 
 # Apply theme
 theme = st.session_state.theme_manager
@@ -50,11 +54,13 @@ apply_custom_css(theme.get_current_theme())
 # --- HEADER WITH THEME TOGGLE ---
 col1, col2, col3 = st.columns([6, 1, 1])
 with col1:
-    st.markdown("""
+    # Get current language for translations
+    lang = st.session_state.language
+    st.markdown(f"""
     <div class="main-header">
-        <h1>📄 CoverLetterPro</h1>
-        <p class="subtitle">AI-Powered Professional Cover Letter Builder</p>
-        <p class="tagline">ATS-Optimized • Industry Templates • Smart Matching • Professional Export</p>
+        <h1>📄 {get_text('app_title', lang)}</h1>
+        <p class="subtitle">{get_text('app_subtitle', lang)}</p>
+        <p class="tagline">{get_text('app_tagline', lang)}</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -69,95 +75,130 @@ with col3:
 
 # --- SIDEBAR ---
 with st.sidebar:
-    st.markdown("### ⚙️ Configuration")
+    lang = st.session_state.language  # Get current language for sidebar
+    st.markdown(f"### {get_text('sidebar_config', lang)}")
     
     # Profile Quick View
     profile = st.session_state.profile_manager.get_profile()
     if profile and profile.get('name'):
-        st.info(f"👤 **{profile['name']}**\n{profile.get('email', '')}")
+        st.info(get_text('sidebar_profile_set', lang).format(profile['name'], profile.get('email', '')))
     else:
-        st.warning("👤 No profile set. Click Profile button to create one.")
+        st.warning(get_text('sidebar_no_profile', lang))
     
     st.divider()
     
     # Language Selection
-    language = st.selectbox(
-        "🌐 Language",
-        ["English", "Español"],
-        help="Select interface language"
+    lang_display_names = get_language_display_names()
+    
+    # Create list of language display names
+    language_options = list(lang_display_names.values())
+    # Find current selection index
+    current_lang_name = lang_display_names.get(lang, 'English')
+    default_index = language_options.index(current_lang_name) if current_lang_name in language_options else 0
+    
+    selected_language = st.selectbox(
+        get_text('sidebar_language', lang),
+        language_options,
+        index=default_index,
+        help=get_text('sidebar_language_help', lang)
     )
-    st.session_state.language = 'en' if language == "English" else 'es'
+    
+    # Update session state based on selection
+    # Map display name back to language code
+    lang_code_map = {v: k for k, v in lang_display_names.items()}
+    st.session_state.language = lang_code_map.get(selected_language, 'en')
     
     # Industry Selection
     industries = st.session_state.template_manager.get_industries()
     selected_industry = st.selectbox(
-        "🏢 Industry",
+        get_text('sidebar_industry', lang),
         industries,
-        help="Select your target industry for optimized templates"
+        help=get_text('sidebar_industry_help', lang)
     )
     
     # Experience Level
     experience_level = st.selectbox(
-        "📊 Experience Level",
-        ["Entry Level", "Mid Level", "Senior Level", "Executive"],
-        help="Your experience level for tone adjustment"
+        get_text('sidebar_experience', lang),
+        [
+            get_text('exp_entry', lang),
+            get_text('exp_mid', lang),
+            get_text('exp_senior', lang),
+            get_text('exp_executive', lang)
+        ],
+        help=get_text('sidebar_experience_help', lang)
     )
     
     # Writing Mode
     writing_mode = st.selectbox(
-        "✍️ Writing Mode",
-        ["Professional & Formal", "Confident & Assertive", "Creative & Dynamic", 
-         "Technical & Precise", "Friendly & Approachable"],
-        help="Choose writing style that matches company culture"
+        get_text('sidebar_writing_mode', lang),
+        [
+            get_text('mode_professional', lang),
+            get_text('mode_confident', lang),
+            get_text('mode_creative', lang),
+            get_text('mode_technical', lang),
+            get_text('mode_friendly', lang)
+        ],
+        help=get_text('sidebar_writing_mode_help', lang)
     )
     
     # Letter Length
     letter_length = st.select_slider(
-        "📏 Letter Length",
-        options=["Concise (200-250)", "Standard (300-350)", "Detailed (400-500)"],
-        value="Standard (300-350)",
-        help="Adjust letter length to your needs"
+        get_text('sidebar_letter_length', lang),
+        options=[
+            get_text('length_concise', lang),
+            get_text('length_standard', lang),
+            get_text('length_detailed', lang)
+        ],
+        value=get_text('length_standard', lang),
+        help=get_text('sidebar_letter_length_help', lang)
     )
     
     st.divider()
     
     # Statistics
-    st.markdown("### 📊 Statistics")
+    st.markdown(f"### {get_text('sidebar_statistics', lang)}")
     col1, col2 = st.columns(2)
     with col1:
-        st.metric("Letters", len(st.session_state.version_manager.get_all_versions()))
+        st.metric(get_text('sidebar_letters', lang), len(st.session_state.version_manager.get_all_versions()))
     with col2:
-        st.metric("Versions", len(st.session_state.generated_versions))
+        st.metric(get_text('sidebar_versions', lang), len(st.session_state.generated_versions))
     
     st.divider()
     
     # Quick Tips
-    with st.expander("💡 Pro Tips"):
-        st.markdown("""
-        **For Best Results:**
-        - Complete your profile first
-        - Use industry-specific templates
-        - Review ATS score > 80%
-        - Compare A/B versions
-        - Export with company branding
+    with st.expander(get_text('sidebar_pro_tips', lang)):
+        st.markdown(f"""
+        {get_text('tips_title', lang)}
+        {get_text('tips_1', lang)}
+        {get_text('tips_2', lang)}
+        {get_text('tips_3', lang)}
+        {get_text('tips_4', lang)}
+        {get_text('tips_5', lang)}
         """)
     
     # Success Stories
-    with st.expander("⭐ Success Stories"):
-        st.markdown("""
-        *"Got 3 interviews in 1 week!"*
-        - Sarah M., Software Engineer
+    with st.expander(get_text('sidebar_success_stories', lang)):
+        st.markdown(f"""
+        {get_text('story_1_quote', lang)}
+        {get_text('story_1_author', lang)}
         
-        *"ATS score went from 45% to 92%"*
-        - James T., Marketing Manager
+        {get_text('story_2_quote', lang)}
+        {get_text('story_2_author', lang)}
         
-        *"Professional export saved me hours"*
-        - Lisa K., Product Designer
+        {get_text('story_3_quote', lang)}
+        {get_text('story_3_author', lang)}
         """)
 
 # --- PROGRESS INDICATOR ---
-st.markdown("### 📍 Your Progress")
-progress_steps = ["Profile", "Input", "Customize", "Generate", "Review & Export"]
+lang = st.session_state.language  # Get current language
+st.markdown(f"### {get_text('progress_title', lang)}")
+progress_steps = [
+    get_text('step_profile', lang),
+    get_text('step_input', lang),
+    get_text('step_customize', lang),
+    get_text('step_generate', lang),
+    get_text('step_review', lang)
+]
 current_step = st.session_state.current_step
 
 progress_html = '<div class="progress-container">'
@@ -174,129 +215,138 @@ st.divider()
 
 # --- MAIN TABS ---
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "📝 Create Letter",
-    "🔍 Analysis & Scoring",
-    "📚 History & Versions",
-    "👤 Profile & Settings",
-    "📖 Guide & Examples"
+    get_text('tab_create', lang),
+    get_text('tab_analysis', lang),
+    get_text('tab_history', lang),
+    get_text('tab_profile', lang),
+    get_text('tab_guide', lang)
 ])
 
 # ============================================
 # TAB 1: CREATE LETTER
 # ============================================
 with tab1:
-    st.markdown("## Step-by-Step Letter Creation")
+    lang = st.session_state.language  # Get current language for this tab
+    st.markdown(f"## {get_text('create_title', lang)}")
     
     # STEP 1: Profile Check
-    with st.expander("### 1️⃣ Profile Information", expanded=current_step==1):
+    with st.expander(get_text('create_step1_title', lang), expanded=current_step==1):
         if not profile or not profile.get('name'):
-            st.warning("⚠️ Please complete your profile in the 'Profile & Settings' tab first!")
-            if st.button("Go to Profile", key="goto_profile"):
+            st.warning(get_text('create_step1_warning', lang))
+            if st.button(get_text('btn_go_to_profile', lang), key="goto_profile"):
                 st.session_state.current_step = 4
                 st.rerun()
         else:
-            st.success(f"✅ Profile ready: {profile['name']}")
-            if st.button("Continue to Input →", key="step1_continue"):
+            st.success(get_text('create_step1_success', lang).format(profile['name']))
+            if st.button(get_text('btn_continue', lang).format(get_text('step_input', lang)), key="step1_continue"):
                 st.session_state.current_step = 2
                 st.rerun()
     
     # STEP 2: Input Data
-    with st.expander("### 2️⃣ Input Your Information", expanded=current_step==2):
+    with st.expander(get_text('create_step2_title', lang), expanded=current_step==2):
         col1, col2 = st.columns(2)
         
         with col1:
-            st.markdown("**📄 Your Resume/Experience**")
+            st.markdown(f"**{get_text('create_step2_resume_label', lang)}**")
             resume_input = st.text_area(
-                "Resume Content",
+                get_text('create_step2_resume_content', lang),
                 height=300,
-                placeholder="Paste your resume here...\n\nInclude:\n• Work experience\n• Skills\n• Achievements\n• Education",
-                help="Upload or paste your complete resume",
+                placeholder=get_text('create_step2_resume_placeholder', lang),
+                help=get_text('create_step2_resume_help', lang),
                 label_visibility="collapsed"
             )
             
             # File upload
             uploaded_resume = st.file_uploader(
-                "Or upload resume (PDF/DOCX)",
+                get_text('create_step2_resume_upload', lang),
                 type=['pdf', 'docx', 'txt'],
                 key="resume_upload"
             )
             
             if uploaded_resume:
-                st.info(f"📄 File: {uploaded_resume.name}")
+                st.info(get_text('create_step2_file_info', lang).format(uploaded_resume.name))
             
-            st.caption(f"📊 Characters: {len(resume_input)}")
+            st.caption(get_text('create_step2_characters', lang).format(len(resume_input)))
         
         with col2:
-            st.markdown("**💼 Job Description**")
+            st.markdown(f"**{get_text('create_step2_job_label', lang)}**")
             job_input = st.text_area(
-                "Job Description",
+                get_text('create_step2_job_content', lang),
                 height=300,
-                placeholder="Paste job description here...\n\nInclude:\n• Requirements\n• Responsibilities\n• Skills needed\n• Company info",
-                help="Paste the complete job posting",
+                placeholder=get_text('create_step2_job_placeholder', lang),
+                help=get_text('create_step2_job_help', lang),
                 label_visibility="collapsed"
             )
             
             # URL input
             job_url = st.text_input(
-                "Or paste job posting URL",
+                get_text('create_step2_job_url', lang),
                 placeholder="https://...",
-                help="We'll extract the content automatically"
+                help=get_text('create_step2_job_url_help', lang)
             )
             
-            if job_url and st.button("🔗 Extract from URL", key="extract_url"):
-                with st.spinner("Extracting job details..."):
+            if job_url and st.button(get_text('btn_extract_url', lang), key="extract_url"):
+                with st.spinner(get_text('create_step2_extracting', lang)):
                     # URL extraction logic would go here
-                    st.success("✅ Content extracted!")
+                    st.success(get_text('create_step2_extracted', lang))
             
-            st.caption(f"📊 Characters: {len(job_input)}")
+            st.caption(get_text('create_step2_characters', lang).format(len(job_input)))
         
         # Continue button
         if resume_input and job_input:
-            if st.button("Continue to Customization →", key="step2_continue", type="primary"):
+            if st.button(get_text('btn_continue', lang).format(get_text('step_customize', lang)), key="step2_continue", type="primary"):
                 st.session_state.resume_data = resume_input
                 st.session_state.job_data = job_input
                 st.session_state.current_step = 3
                 st.rerun()
         else:
-            st.info("💡 Complete both resume and job description to continue")
+            st.info(get_text('create_step2_info', lang))
     
     # STEP 3: Customize
-    with st.expander("### 3️⃣ Customize Your Letter", expanded=current_step==3):
+    with st.expander(get_text('create_step3_title', lang), expanded=current_step==3):
         # Template selection
         templates = st.session_state.template_manager.get_templates_by_industry(selected_industry)
         selected_template = st.selectbox(
-            "📋 Choose Template",
+            get_text('create_step3_template', lang),
             templates,
-            help="Select an industry-specific template"
+            help=get_text('create_step3_template_help', lang)
         )
         
         # Preview template
         if selected_template:
             template_preview = st.session_state.template_manager.get_template_preview(selected_template)
-            with st.expander("👁️ Preview Template"):
+            with st.expander(get_text('create_step3_preview', lang)):
                 st.markdown(template_preview)
         
         # Emphasis areas
-        st.markdown("**🎯 Emphasis Areas**")
+        st.markdown(f"**{get_text('create_step3_emphasis', lang)}**")
         emphasis_areas = st.multiselect(
-            "Select focus areas",
-            ["Technical Skills", "Leadership", "Problem Solving", "Innovation", 
-             "Team Collaboration", "Project Management", "Customer Focus", "Results & Metrics"],
-            default=["Technical Skills"],
-            help="Highlight specific strengths",
+            get_text('create_step3_select_focus', lang),
+            [
+                get_text('emphasis_technical', lang),
+                get_text('emphasis_leadership', lang),
+                get_text('emphasis_problem_solving', lang),
+                get_text('emphasis_innovation', lang),
+                get_text('emphasis_collaboration', lang),
+                get_text('emphasis_project_mgmt', lang),
+                get_text('emphasis_customer', lang),
+                get_text('emphasis_results', lang)
+            ],
+            default=[get_text('emphasis_technical', lang)],
+            help=get_text('create_step3_emphasis_help', lang),
             label_visibility="collapsed"
         )
         
         # Keywords to emphasize
-        st.markdown("**🔑 Additional Keywords (Optional)**")
+        st.markdown(f"**{get_text('create_step3_keywords', lang)}**")
         custom_keywords = st.text_input(
-            "Comma-separated keywords",
-            placeholder="e.g., Python, Agile, Leadership, AWS",
-            help="Extra keywords to emphasize",
+            get_text('create_step3_keywords_label', lang),
+            placeholder=get_text('create_step3_keywords_placeholder', lang),
+            help=get_text('create_step3_keywords_help', lang),
             label_visibility="collapsed"
         )
         
-        if st.button("Continue to Generation →", key="step3_continue", type="primary"):
+        if st.button(get_text('btn_continue', lang).format(get_text('step_generate', lang)), key="step3_continue", type="primary"):
             st.session_state.template = selected_template
             st.session_state.emphasis = emphasis_areas
             st.session_state.keywords = custom_keywords
@@ -304,32 +354,32 @@ with tab1:
             st.rerun()
     
     # STEP 4: Generate
-    with st.expander("### 4️⃣ Generate Your Letter", expanded=current_step==4):
-        st.markdown("**Generation Options**")
+    with st.expander(get_text('create_step4_title', lang), expanded=current_step==4):
+        st.markdown(f"**{get_text('create_step4_options', lang)}**")
         
         col1, col2 = st.columns(2)
         with col1:
             num_versions = st.slider(
-                "📊 Number of Versions (A/B Testing)",
+                get_text('create_step4_num_versions', lang),
                 min_value=1,
                 max_value=5,
                 value=2,
-                help="Generate multiple versions for comparison"
+                help=get_text('create_step4_num_versions_help', lang)
             )
         
         with col2:
             include_analysis = st.checkbox(
-                "📈 Include AI Analysis",
+                get_text('create_step4_ai_analysis', lang),
                 value=True,
-                help="Get writing suggestions and effectiveness score"
+                help=get_text('create_step4_ai_analysis_help', lang)
             )
         
         # Generate button
-        if st.button("🚀 Generate Cover Letter(s)", key="generate_main", type="primary", use_container_width=True):
+        if st.button(get_text('btn_generate', lang), key="generate_main", type="primary", use_container_width=True):
             if not hasattr(st.session_state, 'resume_data'):
-                st.error("❌ Please complete Step 2 first!")
+                st.error(get_text('create_step4_error', lang))
             else:
-                with st.spinner(f"✨ Generating {num_versions} version(s)..."):
+                with st.spinner(get_text('create_step4_generating', lang).format(num_versions)):
                     progress_bar = st.progress(0)
                     
                     ai_generator = AIGenerator()
@@ -365,26 +415,26 @@ with tab1:
                     
                     st.session_state.generated_versions = generated_versions
                     st.session_state.current_step = 5
-                    st.success(f"✅ Generated {num_versions} version(s) successfully!")
+                    st.success(get_text('create_step4_success', lang).format(num_versions))
                     st.balloons()
                     time.sleep(1)
                     st.rerun()
     
     # STEP 5: Review & Export
-    with st.expander("### 5️⃣ Review & Export", expanded=current_step==5):
+    with st.expander(get_text('create_step5_title', lang), expanded=current_step==5):
         if st.session_state.generated_versions:
-            st.success(f"✅ {len(st.session_state.generated_versions)} version(s) ready for review!")
+            st.success(get_text('create_step5_ready', lang).format(len(st.session_state.generated_versions)))
             
             # Version selector
             if len(st.session_state.generated_versions) > 1:
-                st.markdown("**📊 Compare Versions (A/B Testing)**")
+                st.markdown(f"**{get_text('create_step5_compare', lang)}**")
                 cols = st.columns(len(st.session_state.generated_versions))
                 
                 for idx, (col, version) in enumerate(zip(cols, st.session_state.generated_versions)):
                     with col:
-                        st.markdown(f"**Version {version['version']}**")
+                        st.markdown(f"**{get_text('create_step5_version', lang)} {version['version']}**")
                         st.text_area(
-                            f"Version {version['version']}",
+                            f"{get_text('create_step5_version', lang)} {version['version']}",
                             value=version['content'],
                             height=300,
                             key=f"version_{idx}",
@@ -393,35 +443,35 @@ with tab1:
                         
                         # Quick stats
                         word_count = len(version['content'].split())
-                        st.caption(f"📊 {word_count} words")
+                        st.caption(get_text('create_step5_words', lang).format(word_count))
                         
                         # Select button
-                        if st.button(f"✅ Select This Version", key=f"select_v{idx}"):
+                        if st.button(get_text('btn_select_version', lang), key=f"select_v{idx}"):
                             st.session_state.selected_version = idx
-                            st.success("Selected!")
+                            st.success(get_text('create_step5_selected', lang))
             else:
                 selected_version = st.session_state.generated_versions[0]
                 edited_letter = st.text_area(
-                    "Your Cover Letter",
+                    get_text('create_step5_your_letter', lang),
                     value=selected_version['content'],
                     height=400,
-                    help="You can edit the letter directly here"
+                    help=get_text('create_step5_edit_help', lang)
                 )
                 st.session_state.final_letter = edited_letter
                 
                 word_count = len(edited_letter.split())
-                st.info(f"📊 Word count: {word_count} words")
+                st.info(get_text('create_step5_word_count', lang).format(word_count))
             
             st.divider()
             
             # Export options
-            st.markdown("### 📤 Export Options")
+            st.markdown(f"### {get_text('create_step5_export', lang)}")
             
             col1, col2, col3, col4 = st.columns(4)
             
             with col1:
-                if st.button("📄 Download PDF", use_container_width=True, type="primary"):
-                    with st.spinner("Creating PDF..."):
+                if st.button(get_text('btn_download_pdf', lang), use_container_width=True, type="primary"):
+                    with st.spinner(get_text('create_step5_creating_pdf', lang)):
                         pdf_exporter = PDFExporter()
                         pdf_data = pdf_exporter.create_pdf(
                             content=st.session_state.get('final_letter', st.session_state.generated_versions[0]['content']),
@@ -429,22 +479,22 @@ with tab1:
                             branding=True
                         )
                         st.download_button(
-                            "⬇️ Download PDF",
+                            get_text('btn_download_pdf_action', lang),
                             pdf_data,
                             file_name="cover_letter.pdf",
                             mime="application/pdf"
                         )
             
             with col2:
-                if st.button("📝 Download Word", use_container_width=True):
-                    st.info("Word export feature coming soon!")
+                if st.button(get_text('btn_download_word', lang), use_container_width=True):
+                    st.info(get_text('create_step5_word_coming_soon', lang))
             
             with col3:
-                if st.button("📋 Copy to Clipboard", use_container_width=True):
-                    st.success("✅ Use Ctrl+C to copy from the text area above")
+                if st.button(get_text('btn_copy_clipboard', lang), use_container_width=True):
+                    st.success(get_text('create_step5_copy_instruction', lang))
             
             with col4:
-                if st.button("💾 Save to History", use_container_width=True):
+                if st.button(get_text('btn_save_history', lang), use_container_width=True):
                     version_mgr = st.session_state.version_manager
                     version_mgr.save_version(
                         content=st.session_state.get('final_letter', st.session_state.generated_versions[0]['content']),
@@ -454,18 +504,19 @@ with tab1:
                             'template': st.session_state.get('template', 'Standard')
                         }
                     )
-                    st.success("✅ Saved to history!")
+                    st.success(get_text('create_step5_saved', lang))
         else:
-            st.info("💡 Generate a letter first to see it here!")
+            st.info(get_text('create_step5_no_letter', lang))
 
 # ============================================
 # TAB 2: ANALYSIS & SCORING
 # ============================================
 with tab2:
-    st.markdown("## 📊 AI-Powered Analysis & Scoring")
+    lang = st.session_state.language  # Get current language for this tab
+    st.markdown(f"## {get_text('analysis_title', lang)}")
     
     if not st.session_state.generated_versions:
-        st.info("💡 Generate a cover letter first to see analysis and scoring!")
+        st.info(get_text('analysis_no_letter', lang))
     else:
         selected_version = st.session_state.generated_versions[st.session_state.get('selected_version', 0)]
         
@@ -512,7 +563,7 @@ with tab2:
             )
             
             # Display Scores
-            st.markdown("### 🎯 Overall Effectiveness Score")
+            st.markdown(f"### {get_text('analysis_overall_title', lang)}")
             score_cols = st.columns(5)
             
             with score_cols[0]:
@@ -520,7 +571,7 @@ with tab2:
                 st.markdown(f"""
                 <div class="score-card">
                     <div class="score-value" style="color: {score_color};">{overall_score['total']}</div>
-                    <div class="score-label">Overall Score</div>
+                    <div class="score-label">{get_text('analysis_overall', lang)}</div>
                 </div>
                 """, unsafe_allow_html=True)
             
@@ -528,7 +579,7 @@ with tab2:
                 st.markdown(f"""
                 <div class="score-card">
                     <div class="score-value">{ats_score['score']}</div>
-                    <div class="score-label">ATS Score</div>
+                    <div class="score-label">{get_text('analysis_ats', lang)}</div>
                 </div>
                 """, unsafe_allow_html=True)
             
@@ -536,7 +587,7 @@ with tab2:
                 st.markdown(f"""
                 <div class="score-card">
                     <div class="score-value">{grammar_results['score']}</div>
-                    <div class="score-label">Grammar</div>
+                    <div class="score-label">{get_text('analysis_grammar', lang)}</div>
                 </div>
                 """, unsafe_allow_html=True)
             
@@ -544,7 +595,7 @@ with tab2:
                 st.markdown(f"""
                 <div class="score-card">
                     <div class="score-value">{keyword_analysis['coverage']}</div>
-                    <div class="score-label">Keywords</div>
+                    <div class="score-label">{get_text('analysis_keywords', lang)}</div>
                 </div>
                 """, unsafe_allow_html=True)
             
@@ -553,7 +604,7 @@ with tab2:
                     st.markdown(f"""
                     <div class="score-card">
                         <div class="score-value">{skills_match['match_percentage']}</div>
-                        <div class="score-label">Skills Match</div>
+                        <div class="score-label">{get_text('analysis_skills', lang)}</div>
                     </div>
                     """, unsafe_allow_html=True)
             
@@ -564,102 +615,107 @@ with tab2:
             
             with col1:
                 # ATS Analysis
-                with st.expander("🎯 ATS Optimization Analysis", expanded=True):
-                    st.markdown(f"**Score: {ats_score['score']}/100**")
+                with st.expander(get_text('analysis_ats_title', lang), expanded=True):
+                    st.markdown(f"**{get_text('analysis_score_label', lang)}: {ats_score['score']}/100**")
                     st.progress(ats_score['score'] / 100)
                     
-                    st.markdown("**✅ Strengths:**")
+                    st.markdown(f"**{get_text('analysis_strengths', lang)}:**")
                     for strength in ats_score.get('strengths', []):
                         st.success(f"• {strength}")
                     
-                    st.markdown("**⚠️ Improvements:**")
+                    st.markdown(f"**{get_text('analysis_improvements', lang)}:**")
                     for improvement in ats_score.get('improvements', []):
                         st.warning(f"• {improvement}")
                 
                 # Grammar Check
-                with st.expander("✍️ Grammar & Style Analysis"):
-                    st.markdown(f"**Score: {grammar_results['score']}/100**")
+                with st.expander(get_text('analysis_grammar_title', lang)):
+                    st.markdown(f"**{get_text('analysis_score_label', lang)}: {grammar_results['score']}/100**")
                     st.progress(grammar_results['score'] / 100)
                     
                     if grammar_results.get('issues'):
-                        st.markdown("**Issues Found:**")
+                        st.markdown(f"**{get_text('analysis_issues_found', lang)}:**")
                         for issue in grammar_results['issues']:
                             st.warning(f"• {issue}")
                     else:
-                        st.success("✅ No grammar issues detected!")
+                        st.success(get_text('analysis_no_issues', lang))
             
             with col2:
                 # Keyword Analysis
-                with st.expander("🔑 Keyword Analysis", expanded=True):
-                    st.markdown(f"**Coverage: {keyword_analysis['coverage']}%**")
+                with st.expander(get_text('analysis_keyword_title', lang), expanded=True):
+                    st.markdown(f"**{get_text('analysis_coverage', lang)}: {keyword_analysis['coverage']}%**")
                     st.progress(keyword_analysis['coverage'] / 100)
                     
-                    st.markdown("**✅ Matched Keywords:**")
+                    st.markdown(f"**{get_text('analysis_matched', lang)}:**")
                     for keyword in keyword_analysis.get('matched', []):
                         st.markdown(f"<span class='keyword-badge matched'>{keyword}</span>", unsafe_allow_html=True)
                     
-                    st.markdown("**⚠️ Missing Keywords:**")
+                    st.markdown(f"**{get_text('analysis_missing', lang)}:**")
                     for keyword in keyword_analysis.get('missing', []):
                         st.markdown(f"<span class='keyword-badge missing'>{keyword}</span>", unsafe_allow_html=True)
                 
                 # Skills Matching
                 if skills_match:
-                    with st.expander("💼 Skills Matching Analysis"):
-                        st.markdown(f"**Match: {skills_match['match_percentage']}%**")
+                    with st.expander(get_text('analysis_skills_title', lang)):
+                        st.markdown(f"**{get_text('analysis_match', lang)}: {skills_match['match_percentage']}%**")
                         st.progress(skills_match['match_percentage'] / 100)
                         
-                        st.markdown("**✅ Highlighted Skills:**")
+                        st.markdown(f"**{get_text('analysis_highlighted', lang)}:**")
                         for skill in skills_match.get('matched_skills', []):
                             st.success(f"• {skill}")
                         
-                        st.markdown("**💡 Consider Adding:**")
+                        st.markdown(f"**{get_text('analysis_consider', lang)}:**")
                         for skill in skills_match.get('missing_skills', []):
                             st.info(f"• {skill}")
             
             st.divider()
             
             # AI Suggestions
-            st.markdown("### 🤖 AI-Powered Improvement Suggestions")
+            st.markdown(f"### {get_text('analysis_suggestions_title', lang)}")
             suggestions = letter_scorer.get_suggestions(selected_version['content'], overall_score)
             
             for i, suggestion in enumerate(suggestions, 1):
-                with st.expander(f"💡 Suggestion {i}: {suggestion['title']}"):
+                with st.expander(f"{get_text('analysis_suggestion', lang)} {i}: {suggestion['title']}"):
                     st.markdown(suggestion['description'])
                     if 'example' in suggestion:
                         st.code(suggestion['example'])
-                    if st.button(f"Apply Suggestion {i}", key=f"apply_sug_{i}"):
-                        st.success("✅ Suggestion applied! Regenerate to see changes.")
+                    if st.button(get_text('btn_apply_suggestion', lang).format(i), key=f"apply_sug_{i}"):
+                        st.success(get_text('analysis_suggestion_applied', lang))
 
 # ============================================
 # TAB 3: HISTORY & VERSIONS
 # ============================================
 with tab3:
-    st.markdown("## 📚 History & Version Management")
+    lang = st.session_state.language  # Get current language for this tab
+    st.markdown(f"## {get_text('history_title', lang)}")
     
     version_mgr = st.session_state.version_manager
     all_versions = version_mgr.get_all_versions()
     
     if not all_versions:
-        st.info("💡 No saved letters yet. Generate and save your first letter!")
+        st.info(get_text('history_no_letters', lang))
     else:
-        st.success(f"✅ You have {len(all_versions)} saved letter(s)")
+        st.success(get_text('history_count', lang).format(len(all_versions)))
         
         # Search and filter
         col1, col2, col3 = st.columns([3, 2, 1])
         with col1:
             search_query = st.text_input(
-                "🔍 Search letters",
-                placeholder="Search by keywords, industry, etc."
+                get_text('history_search', lang),
+                placeholder=get_text('history_search_placeholder', lang)
             )
         with col2:
             filter_industry = st.selectbox(
-                "Filter by Industry",
-                ["All"] + st.session_state.template_manager.get_industries()
+                get_text('history_filter', lang),
+                [get_text('history_filter_all', lang)] + st.session_state.template_manager.get_industries()
             )
         with col3:
             sort_by = st.selectbox(
-                "Sort by",
-                ["Newest", "Oldest", "Score"]
+                get_text('history_sort', lang),
+                [
+                    get_text('history_sort_newest', lang),
+                    get_text('history_sort_oldest', lang),
+                    get_text('history_sort_score', lang)
+                ]
             )
         
         st.divider()
@@ -667,14 +723,18 @@ with tab3:
         # Display versions
         for idx, version in enumerate(all_versions):
             with st.expander(
-                f"📄 Letter #{idx + 1} - {version.get('timestamp', 'N/A')} - {version.get('metadata', {}).get('industry', 'General')}",
+                get_text('history_letter_title', lang).format(
+                    idx + 1,
+                    version.get('timestamp', 'N/A'),
+                    version.get('metadata', {}).get('industry', get_text('history_general', lang))
+                ),
                 expanded=False
             ):
                 col1, col2 = st.columns([3, 1])
                 
                 with col1:
                     st.text_area(
-                        "Content",
+                        get_text('history_content', lang),
                         value=version['content'],
                         height=200,
                         key=f"history_{idx}",
@@ -682,33 +742,33 @@ with tab3:
                     )
                 
                 with col2:
-                    st.markdown("**Metadata:**")
+                    st.markdown(f"**{get_text('history_metadata', lang)}:**")
                     metadata = version.get('metadata', {})
-                    st.caption(f"Industry: {metadata.get('industry', 'N/A')}")
-                    st.caption(f"Mode: {metadata.get('mode', 'N/A')}")
-                    st.caption(f"Template: {metadata.get('template', 'N/A')}")
+                    st.caption(f"{get_text('history_industry', lang)}: {metadata.get('industry', 'N/A')}")
+                    st.caption(f"{get_text('history_mode', lang)}: {metadata.get('mode', 'N/A')}")
+                    st.caption(f"{get_text('history_template', lang)}: {metadata.get('template', 'N/A')}")
                     
                     if 'score' in version:
-                        st.metric("Score", version['score'])
+                        st.metric(get_text('history_score', lang), version['score'])
                     
                     st.divider()
                     
-                    if st.button("🔄 Use as Template", key=f"use_template_{idx}"):
+                    if st.button(get_text('btn_use_template', lang), key=f"use_template_{idx}"):
                         st.session_state.template_content = version['content']
-                        st.success("✅ Loaded as template!")
+                        st.success(get_text('history_template_loaded', lang))
                     
-                    if st.button("📥 Download", key=f"download_{idx}"):
+                    if st.button(get_text('btn_download', lang), key=f"download_{idx}"):
                         st.download_button(
-                            "⬇️ Download",
+                            get_text('btn_download_action', lang),
                             version['content'],
                             file_name=f"cover_letter_{idx+1}.txt",
                             mime="text/plain",
                             key=f"dl_btn_{idx}"
                         )
                     
-                    if st.button("🗑️ Delete", key=f"delete_{idx}"):
+                    if st.button(get_text('btn_delete', lang), key=f"delete_{idx}"):
                         version_mgr.delete_version(idx)
-                        st.success("✅ Deleted!")
+                        st.success(get_text('history_deleted', lang))
                         st.rerun()
         
         st.divider()
@@ -716,102 +776,103 @@ with tab3:
         # Bulk actions
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("📥 Export All as ZIP"):
-                st.info("Exporting all letters...")
+            if st.button(get_text('btn_export_zip', lang)):
+                st.info(get_text('history_exporting', lang))
         with col2:
-            if st.button("🗑️ Clear All History"):
-                if st.checkbox("I'm sure I want to delete all letters"):
+            if st.button(get_text('btn_clear_history', lang)):
+                if st.checkbox(get_text('history_confirm_clear', lang)):
                     version_mgr.clear_all()
-                    st.success("✅ All history cleared!")
+                    st.success(get_text('history_cleared', lang))
                     st.rerun()
 
 # ============================================
 # TAB 4: PROFILE & SETTINGS
 # ============================================
 with tab4:
-    st.markdown("## 👤 Profile & Settings")
+    lang = st.session_state.language  # Get current language for this tab
+    st.markdown(f"## {get_text('profile_title', lang)}")
     
     profile_mgr = st.session_state.profile_manager
     current_profile = profile_mgr.get_profile()
     
     with st.form("profile_form"):
-        st.markdown("### Personal Information")
+        st.markdown(f"### {get_text('profile_personal_info', lang)}")
         
         col1, col2 = st.columns(2)
         
         with col1:
             name = st.text_input(
-                "Full Name *",
+                get_text('profile_name', lang),
                 value=current_profile.get('name', ''),
-                placeholder="John Doe"
+                placeholder=get_text('profile_name_placeholder', lang)
             )
             
             email = st.text_input(
-                "Email Address *",
+                get_text('profile_email', lang),
                 value=current_profile.get('email', ''),
-                placeholder="john.doe@email.com"
+                placeholder=get_text('profile_email_placeholder', lang)
             )
             
             phone = st.text_input(
-                "Phone Number",
+                get_text('profile_phone', lang),
                 value=current_profile.get('phone', ''),
-                placeholder="+1 (555) 123-4567"
+                placeholder=get_text('profile_phone_placeholder', lang)
             )
             
             location = st.text_input(
-                "Location",
+                get_text('profile_location', lang),
                 value=current_profile.get('location', ''),
-                placeholder="San Francisco, CA"
+                placeholder=get_text('profile_location_placeholder', lang)
             )
         
         with col2:
             linkedin = st.text_input(
-                "LinkedIn URL",
+                get_text('profile_linkedin', lang),
                 value=current_profile.get('linkedin', ''),
-                placeholder="https://linkedin.com/in/johndoe"
+                placeholder=get_text('profile_linkedin_placeholder', lang)
             )
             
             portfolio = st.text_input(
-                "Portfolio/Website",
+                get_text('profile_portfolio', lang),
                 value=current_profile.get('portfolio', ''),
-                placeholder="https://johndoe.com"
+                placeholder=get_text('profile_portfolio_placeholder', lang)
             )
             
             years_experience = st.number_input(
-                "Years of Experience",
+                get_text('profile_years_exp', lang),
                 min_value=0,
                 max_value=50,
                 value=current_profile.get('years_experience', 0)
             )
             
             current_title = st.text_input(
-                "Current/Recent Job Title",
+                get_text('profile_current_title', lang),
                 value=current_profile.get('current_title', ''),
-                placeholder="Senior Software Engineer"
+                placeholder=get_text('profile_current_title_placeholder', lang)
             )
         
-        st.markdown("### Professional Summary")
+        st.markdown(f"### {get_text('profile_summary', lang)}")
         professional_summary = st.text_area(
-            "Brief professional summary (optional)",
+            get_text('profile_summary_label', lang),
             value=current_profile.get('professional_summary', ''),
             height=100,
-            placeholder="A brief summary of your professional background...",
+            placeholder=get_text('profile_summary_placeholder', lang),
             label_visibility="collapsed"
         )
         
-        st.markdown("### Key Skills")
+        st.markdown(f"### {get_text('profile_skills', lang)}")
         key_skills = st.text_area(
-            "List your key skills (comma-separated)",
+            get_text('profile_skills_label', lang),
             value=current_profile.get('key_skills', ''),
-            placeholder="Python, JavaScript, Project Management, Leadership",
+            placeholder=get_text('profile_skills_placeholder', lang),
             label_visibility="collapsed"
         )
         
-        submitted = st.form_submit_button("💾 Save Profile", type="primary", use_container_width=True)
+        submitted = st.form_submit_button(get_text('btn_save_profile', lang), type="primary", use_container_width=True)
         
         if submitted:
             if not name or not email:
-                st.error("❌ Name and email are required!")
+                st.error(get_text('profile_error_required', lang))
             else:
                 profile_data = {
                     'name': name,
@@ -827,49 +888,57 @@ with tab4:
                 }
                 
                 profile_mgr.save_profile(profile_data)
-                st.success("✅ Profile saved successfully!")
+                st.success(get_text('profile_saved', lang))
                 st.balloons()
     
     st.divider()
     
     # Application Settings
-    st.markdown("### ⚙️ Application Settings")
+    st.markdown(f"### {get_text('settings_title', lang)}")
     
     col1, col2 = st.columns(2)
     
     with col1:
-        st.checkbox("🔔 Enable notifications", value=True)
-        st.checkbox("💾 Auto-save drafts", value=True)
-        st.checkbox("📊 Show advanced analytics", value=False)
+        st.checkbox(get_text('settings_notifications', lang), value=True)
+        st.checkbox(get_text('settings_autosave', lang), value=True)
+        st.checkbox(get_text('settings_analytics', lang), value=False)
     
     with col2:
-        st.checkbox("🎨 Enable animations", value=True)
-        st.checkbox("📧 Email export copies", value=False)
-        st.number_input("Default letter length (words)", min_value=200, max_value=500, value=350)
+        st.checkbox(get_text('settings_animations', lang), value=True)
+        st.checkbox(get_text('settings_email_copies', lang), value=False)
+        st.number_input(get_text('settings_letter_length', lang), min_value=200, max_value=500, value=350)
 
 # ============================================
 # TAB 5: GUIDE & EXAMPLES
 # ============================================
 with tab5:
-    st.markdown("## 📖 Complete Guide & Examples")
+    lang = st.session_state.language  # Get current language for this tab
+    st.markdown(f"## {get_text('guide_title', lang)}")
     
-    guide_tabs = st.tabs(["Quick Start", "Best Practices", "Examples", "ATS Tips", "FAQ"])
+    guide_tabs = st.tabs([
+        get_text('guide_quickstart', lang),
+        get_text('guide_practices', lang),
+        get_text('guide_examples', lang),
+        get_text('guide_ats', lang),
+        get_text('guide_faq', lang)
+    ])
     
     with guide_tabs[0]:
-        st.markdown("""
-        ### 🚀 Quick Start Guide
-        
-        Complete guide content here...
-        """)
+        st.markdown(f"### {get_text('guide_quickstart_title', lang)}")
+        st.markdown(get_text('guide_quickstart_content', lang))
     
     with guide_tabs[1]:
-        st.markdown("### ✨ Best Practices")
+        st.markdown(f"### {get_text('guide_practices_title', lang)}")
+        st.markdown(get_text('guide_practices_content', lang))
     
     with guide_tabs[2]:
-        st.markdown("### 📚 Examples by Industry")
+        st.markdown(f"### {get_text('guide_examples_title', lang)}")
+        st.markdown(get_text('guide_examples_content', lang))
     
     with guide_tabs[3]:
-        st.markdown("### 🎯 ATS Tips")
+        st.markdown(f"### {get_text('guide_ats_title', lang)}")
+        st.markdown(get_text('guide_ats_content', lang))
     
     with guide_tabs[4]:
-        st.markdown("### ❓ FAQ")
+        st.markdown(f"### {get_text('guide_faq_title', lang)}")
+        st.markdown(get_text('guide_faq_content', lang))
