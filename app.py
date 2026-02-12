@@ -43,6 +43,9 @@ if 'generated_versions' not in st.session_state:
     st.session_state.generated_versions = []
 if 'show_success_modal' not in st.session_state:
     st.session_state.show_success_modal = False
+# Initialize language if not set
+if 'language' not in st.session_state:
+    st.session_state.language = 'en'
 
 # Apply theme
 theme = st.session_state.theme_manager
@@ -51,11 +54,13 @@ apply_custom_css(theme.get_current_theme())
 # --- HEADER WITH THEME TOGGLE ---
 col1, col2, col3 = st.columns([6, 1, 1])
 with col1:
-    st.markdown("""
+    # Get current language for translations
+    lang = st.session_state.language
+    st.markdown(f"""
     <div class="main-header">
-        <h1>📄 CoverLetterPro</h1>
-        <p class="subtitle">AI-Powered Professional Cover Letter Builder</p>
-        <p class="tagline">ATS-Optimized • Industry Templates • Smart Matching • Professional Export</p>
+        <h1>📄 {get_text('app_title', lang)}</h1>
+        <p class="subtitle">{get_text('app_subtitle', lang)}</p>
+        <p class="tagline">{get_text('app_tagline', lang)}</p>
     </div>
     """, unsafe_allow_html=True)
 
