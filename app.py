@@ -190,8 +190,15 @@ with st.sidebar:
         """)
 
 # --- PROGRESS INDICATOR ---
-st.markdown("### 📍 Your Progress")
-progress_steps = ["Profile", "Input", "Customize", "Generate", "Review & Export"]
+lang = st.session_state.language  # Get current language
+st.markdown(f"### {get_text('progress_title', lang)}")
+progress_steps = [
+    get_text('step_profile', lang),
+    get_text('step_input', lang),
+    get_text('step_customize', lang),
+    get_text('step_generate', lang),
+    get_text('step_review', lang)
+]
 current_step = st.session_state.current_step
 
 progress_html = '<div class="progress-container">'
@@ -208,11 +215,11 @@ st.divider()
 
 # --- MAIN TABS ---
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "📝 Create Letter",
-    "🔍 Analysis & Scoring",
-    "📚 History & Versions",
-    "👤 Profile & Settings",
-    "📖 Guide & Examples"
+    get_text('tab_create', lang),
+    get_text('tab_analysis', lang),
+    get_text('tab_history', lang),
+    get_text('tab_profile', lang),
+    get_text('tab_guide', lang)
 ])
 
 # ============================================
