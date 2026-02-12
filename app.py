@@ -354,32 +354,32 @@ with tab1:
             st.rerun()
     
     # STEP 4: Generate
-    with st.expander("### 4️⃣ Generate Your Letter", expanded=current_step==4):
-        st.markdown("**Generation Options**")
+    with st.expander(get_text('create_step4_title', lang), expanded=current_step==4):
+        st.markdown(f"**{get_text('create_step4_options', lang)}**")
         
         col1, col2 = st.columns(2)
         with col1:
             num_versions = st.slider(
-                "📊 Number of Versions (A/B Testing)",
+                get_text('create_step4_num_versions', lang),
                 min_value=1,
                 max_value=5,
                 value=2,
-                help="Generate multiple versions for comparison"
+                help=get_text('create_step4_num_versions_help', lang)
             )
         
         with col2:
             include_analysis = st.checkbox(
-                "📈 Include AI Analysis",
+                get_text('create_step4_ai_analysis', lang),
                 value=True,
-                help="Get writing suggestions and effectiveness score"
+                help=get_text('create_step4_ai_analysis_help', lang)
             )
         
         # Generate button
-        if st.button("🚀 Generate Cover Letter(s)", key="generate_main", type="primary", use_container_width=True):
+        if st.button(get_text('btn_generate', lang), key="generate_main", type="primary", use_container_width=True):
             if not hasattr(st.session_state, 'resume_data'):
-                st.error("❌ Please complete Step 2 first!")
+                st.error(get_text('create_step4_error', lang))
             else:
-                with st.spinner(f"✨ Generating {num_versions} version(s)..."):
+                with st.spinner(get_text('create_step4_generating', lang).format(num_versions)):
                     progress_bar = st.progress(0)
                     
                     ai_generator = AIGenerator()
@@ -415,7 +415,7 @@ with tab1:
                     
                     st.session_state.generated_versions = generated_versions
                     st.session_state.current_step = 5
-                    st.success(f"✅ Generated {num_versions} version(s) successfully!")
+                    st.success(get_text('create_step4_success', lang).format(num_versions))
                     st.balloons()
                     time.sleep(1)
                     st.rerun()
