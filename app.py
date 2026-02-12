@@ -87,12 +87,26 @@ with st.sidebar:
     st.divider()
     
     # Language Selection
-    language = st.selectbox(
-        "🌐 Language",
-        ["English", "Español"],
-        help="Select interface language"
+    lang = st.session_state.language  # Get current language
+    lang_display_names = get_language_display_names()
+    
+    # Create list of language display names
+    language_options = list(lang_display_names.values())
+    # Find current selection index
+    current_lang_name = lang_display_names.get(lang, 'English')
+    default_index = language_options.index(current_lang_name) if current_lang_name in language_options else 0
+    
+    selected_language = st.selectbox(
+        get_text('sidebar_language', lang),
+        language_options,
+        index=default_index,
+        help=get_text('sidebar_language_help', lang)
     )
-    st.session_state.language = 'en' if language == "English" else 'es'
+    
+    # Update session state based on selection
+    # Map display name back to language code
+    lang_code_map = {v: k for k, v in lang_display_names.items()}
+    st.session_state.language = lang_code_map.get(selected_language, 'en')
     
     # Industry Selection
     industries = st.session_state.template_manager.get_industries()
