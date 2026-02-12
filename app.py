@@ -303,42 +303,50 @@ with tab1:
             st.info(get_text('create_step2_info', lang))
     
     # STEP 3: Customize
-    with st.expander("### 3️⃣ Customize Your Letter", expanded=current_step==3):
+    with st.expander(get_text('create_step3_title', lang), expanded=current_step==3):
         # Template selection
         templates = st.session_state.template_manager.get_templates_by_industry(selected_industry)
         selected_template = st.selectbox(
-            "📋 Choose Template",
+            get_text('create_step3_template', lang),
             templates,
-            help="Select an industry-specific template"
+            help=get_text('create_step3_template_help', lang)
         )
         
         # Preview template
         if selected_template:
             template_preview = st.session_state.template_manager.get_template_preview(selected_template)
-            with st.expander("👁️ Preview Template"):
+            with st.expander(get_text('create_step3_preview', lang)):
                 st.markdown(template_preview)
         
         # Emphasis areas
-        st.markdown("**🎯 Emphasis Areas**")
+        st.markdown(f"**{get_text('create_step3_emphasis', lang)}**")
         emphasis_areas = st.multiselect(
-            "Select focus areas",
-            ["Technical Skills", "Leadership", "Problem Solving", "Innovation", 
-             "Team Collaboration", "Project Management", "Customer Focus", "Results & Metrics"],
-            default=["Technical Skills"],
-            help="Highlight specific strengths",
+            get_text('create_step3_select_focus', lang),
+            [
+                get_text('emphasis_technical', lang),
+                get_text('emphasis_leadership', lang),
+                get_text('emphasis_problem_solving', lang),
+                get_text('emphasis_innovation', lang),
+                get_text('emphasis_collaboration', lang),
+                get_text('emphasis_project_mgmt', lang),
+                get_text('emphasis_customer', lang),
+                get_text('emphasis_results', lang)
+            ],
+            default=[get_text('emphasis_technical', lang)],
+            help=get_text('create_step3_emphasis_help', lang),
             label_visibility="collapsed"
         )
         
         # Keywords to emphasize
-        st.markdown("**🔑 Additional Keywords (Optional)**")
+        st.markdown(f"**{get_text('create_step3_keywords', lang)}**")
         custom_keywords = st.text_input(
-            "Comma-separated keywords",
-            placeholder="e.g., Python, Agile, Leadership, AWS",
-            help="Extra keywords to emphasize",
+            get_text('create_step3_keywords_label', lang),
+            placeholder=get_text('create_step3_keywords_placeholder', lang),
+            help=get_text('create_step3_keywords_help', lang),
             label_visibility="collapsed"
         )
         
-        if st.button("Continue to Generation →", key="step3_continue", type="primary"):
+        if st.button(get_text('btn_continue', lang).format(get_text('step_generate', lang)), key="step3_continue", type="primary"):
             st.session_state.template = selected_template
             st.session_state.emphasis = emphasis_areas
             st.session_state.keywords = custom_keywords
