@@ -243,64 +243,64 @@ with tab1:
                 st.rerun()
     
     # STEP 2: Input Data
-    with st.expander("### 2️⃣ Input Your Information", expanded=current_step==2):
+    with st.expander(get_text('create_step2_title', lang), expanded=current_step==2):
         col1, col2 = st.columns(2)
         
         with col1:
-            st.markdown("**📄 Your Resume/Experience**")
+            st.markdown(f"**{get_text('create_step2_resume_label', lang)}**")
             resume_input = st.text_area(
-                "Resume Content",
+                get_text('create_step2_resume_content', lang),
                 height=300,
-                placeholder="Paste your resume here...\n\nInclude:\n• Work experience\n• Skills\n• Achievements\n• Education",
-                help="Upload or paste your complete resume",
+                placeholder=get_text('create_step2_resume_placeholder', lang),
+                help=get_text('create_step2_resume_help', lang),
                 label_visibility="collapsed"
             )
             
             # File upload
             uploaded_resume = st.file_uploader(
-                "Or upload resume (PDF/DOCX)",
+                get_text('create_step2_resume_upload', lang),
                 type=['pdf', 'docx', 'txt'],
                 key="resume_upload"
             )
             
             if uploaded_resume:
-                st.info(f"📄 File: {uploaded_resume.name}")
+                st.info(get_text('create_step2_file_info', lang).format(uploaded_resume.name))
             
-            st.caption(f"📊 Characters: {len(resume_input)}")
+            st.caption(get_text('create_step2_characters', lang).format(len(resume_input)))
         
         with col2:
-            st.markdown("**💼 Job Description**")
+            st.markdown(f"**{get_text('create_step2_job_label', lang)}**")
             job_input = st.text_area(
-                "Job Description",
+                get_text('create_step2_job_content', lang),
                 height=300,
-                placeholder="Paste job description here...\n\nInclude:\n• Requirements\n• Responsibilities\n• Skills needed\n• Company info",
-                help="Paste the complete job posting",
+                placeholder=get_text('create_step2_job_placeholder', lang),
+                help=get_text('create_step2_job_help', lang),
                 label_visibility="collapsed"
             )
             
             # URL input
             job_url = st.text_input(
-                "Or paste job posting URL",
+                get_text('create_step2_job_url', lang),
                 placeholder="https://...",
-                help="We'll extract the content automatically"
+                help=get_text('create_step2_job_url_help', lang)
             )
             
-            if job_url and st.button("🔗 Extract from URL", key="extract_url"):
-                with st.spinner("Extracting job details..."):
+            if job_url and st.button(get_text('btn_extract_url', lang), key="extract_url"):
+                with st.spinner(get_text('create_step2_extracting', lang)):
                     # URL extraction logic would go here
-                    st.success("✅ Content extracted!")
+                    st.success(get_text('create_step2_extracted', lang))
             
-            st.caption(f"📊 Characters: {len(job_input)}")
+            st.caption(get_text('create_step2_characters', lang).format(len(job_input)))
         
         # Continue button
         if resume_input and job_input:
-            if st.button("Continue to Customization →", key="step2_continue", type="primary"):
+            if st.button(get_text('btn_continue', lang).format(get_text('step_customize', lang)), key="step2_continue", type="primary"):
                 st.session_state.resume_data = resume_input
                 st.session_state.job_data = job_input
                 st.session_state.current_step = 3
                 st.rerun()
         else:
-            st.info("💡 Complete both resume and job description to continue")
+            st.info(get_text('create_step2_info', lang))
     
     # STEP 3: Customize
     with st.expander("### 3️⃣ Customize Your Letter", expanded=current_step==3):
