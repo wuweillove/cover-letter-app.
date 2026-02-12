@@ -512,10 +512,11 @@ with tab1:
 # TAB 2: ANALYSIS & SCORING
 # ============================================
 with tab2:
-    st.markdown("## 📊 AI-Powered Analysis & Scoring")
+    lang = st.session_state.language  # Get current language for this tab
+    st.markdown(f"## {get_text('analysis_title', lang)}")
     
     if not st.session_state.generated_versions:
-        st.info("💡 Generate a cover letter first to see analysis and scoring!")
+        st.info(get_text('analysis_no_letter', lang))
     else:
         selected_version = st.session_state.generated_versions[st.session_state.get('selected_version', 0)]
         
@@ -562,7 +563,7 @@ with tab2:
             )
             
             # Display Scores
-            st.markdown("### 🎯 Overall Effectiveness Score")
+            st.markdown(f"### {get_text('analysis_overall_title', lang)}")
             score_cols = st.columns(5)
             
             with score_cols[0]:
@@ -570,7 +571,7 @@ with tab2:
                 st.markdown(f"""
                 <div class="score-card">
                     <div class="score-value" style="color: {score_color};">{overall_score['total']}</div>
-                    <div class="score-label">Overall Score</div>
+                    <div class="score-label">{get_text('analysis_overall', lang)}</div>
                 </div>
                 """, unsafe_allow_html=True)
             
@@ -578,7 +579,7 @@ with tab2:
                 st.markdown(f"""
                 <div class="score-card">
                     <div class="score-value">{ats_score['score']}</div>
-                    <div class="score-label">ATS Score</div>
+                    <div class="score-label">{get_text('analysis_ats', lang)}</div>
                 </div>
                 """, unsafe_allow_html=True)
             
@@ -586,7 +587,7 @@ with tab2:
                 st.markdown(f"""
                 <div class="score-card">
                     <div class="score-value">{grammar_results['score']}</div>
-                    <div class="score-label">Grammar</div>
+                    <div class="score-label">{get_text('analysis_grammar', lang)}</div>
                 </div>
                 """, unsafe_allow_html=True)
             
@@ -594,7 +595,7 @@ with tab2:
                 st.markdown(f"""
                 <div class="score-card">
                     <div class="score-value">{keyword_analysis['coverage']}</div>
-                    <div class="score-label">Keywords</div>
+                    <div class="score-label">{get_text('analysis_keywords', lang)}</div>
                 </div>
                 """, unsafe_allow_html=True)
             
@@ -603,7 +604,7 @@ with tab2:
                     st.markdown(f"""
                     <div class="score-card">
                         <div class="score-value">{skills_match['match_percentage']}</div>
-                        <div class="score-label">Skills Match</div>
+                        <div class="score-label">{get_text('analysis_skills', lang)}</div>
                     </div>
                     """, unsafe_allow_html=True)
             
@@ -614,71 +615,71 @@ with tab2:
             
             with col1:
                 # ATS Analysis
-                with st.expander("🎯 ATS Optimization Analysis", expanded=True):
-                    st.markdown(f"**Score: {ats_score['score']}/100**")
+                with st.expander(get_text('analysis_ats_title', lang), expanded=True):
+                    st.markdown(f"**{get_text('analysis_score_label', lang)}: {ats_score['score']}/100**")
                     st.progress(ats_score['score'] / 100)
                     
-                    st.markdown("**✅ Strengths:**")
+                    st.markdown(f"**{get_text('analysis_strengths', lang)}:**")
                     for strength in ats_score.get('strengths', []):
                         st.success(f"• {strength}")
                     
-                    st.markdown("**⚠️ Improvements:**")
+                    st.markdown(f"**{get_text('analysis_improvements', lang)}:**")
                     for improvement in ats_score.get('improvements', []):
                         st.warning(f"• {improvement}")
                 
                 # Grammar Check
-                with st.expander("✍️ Grammar & Style Analysis"):
-                    st.markdown(f"**Score: {grammar_results['score']}/100**")
+                with st.expander(get_text('analysis_grammar_title', lang)):
+                    st.markdown(f"**{get_text('analysis_score_label', lang)}: {grammar_results['score']}/100**")
                     st.progress(grammar_results['score'] / 100)
                     
                     if grammar_results.get('issues'):
-                        st.markdown("**Issues Found:**")
+                        st.markdown(f"**{get_text('analysis_issues_found', lang)}:**")
                         for issue in grammar_results['issues']:
                             st.warning(f"• {issue}")
                     else:
-                        st.success("✅ No grammar issues detected!")
+                        st.success(get_text('analysis_no_issues', lang))
             
             with col2:
                 # Keyword Analysis
-                with st.expander("🔑 Keyword Analysis", expanded=True):
-                    st.markdown(f"**Coverage: {keyword_analysis['coverage']}%**")
+                with st.expander(get_text('analysis_keyword_title', lang), expanded=True):
+                    st.markdown(f"**{get_text('analysis_coverage', lang)}: {keyword_analysis['coverage']}%**")
                     st.progress(keyword_analysis['coverage'] / 100)
                     
-                    st.markdown("**✅ Matched Keywords:**")
+                    st.markdown(f"**{get_text('analysis_matched', lang)}:**")
                     for keyword in keyword_analysis.get('matched', []):
                         st.markdown(f"<span class='keyword-badge matched'>{keyword}</span>", unsafe_allow_html=True)
                     
-                    st.markdown("**⚠️ Missing Keywords:**")
+                    st.markdown(f"**{get_text('analysis_missing', lang)}:**")
                     for keyword in keyword_analysis.get('missing', []):
                         st.markdown(f"<span class='keyword-badge missing'>{keyword}</span>", unsafe_allow_html=True)
                 
                 # Skills Matching
                 if skills_match:
-                    with st.expander("💼 Skills Matching Analysis"):
-                        st.markdown(f"**Match: {skills_match['match_percentage']}%**")
+                    with st.expander(get_text('analysis_skills_title', lang)):
+                        st.markdown(f"**{get_text('analysis_match', lang)}: {skills_match['match_percentage']}%**")
                         st.progress(skills_match['match_percentage'] / 100)
                         
-                        st.markdown("**✅ Highlighted Skills:**")
+                        st.markdown(f"**{get_text('analysis_highlighted', lang)}:**")
                         for skill in skills_match.get('matched_skills', []):
                             st.success(f"• {skill}")
                         
-                        st.markdown("**💡 Consider Adding:**")
+                        st.markdown(f"**{get_text('analysis_consider', lang)}:**")
                         for skill in skills_match.get('missing_skills', []):
                             st.info(f"• {skill}")
             
             st.divider()
             
             # AI Suggestions
-            st.markdown("### 🤖 AI-Powered Improvement Suggestions")
+            st.markdown(f"### {get_text('analysis_suggestions_title', lang)}")
             suggestions = letter_scorer.get_suggestions(selected_version['content'], overall_score)
             
             for i, suggestion in enumerate(suggestions, 1):
-                with st.expander(f"💡 Suggestion {i}: {suggestion['title']}"):
+                with st.expander(f"{get_text('analysis_suggestion', lang)} {i}: {suggestion['title']}"):
                     st.markdown(suggestion['description'])
                     if 'example' in suggestion:
                         st.code(suggestion['example'])
-                    if st.button(f"Apply Suggestion {i}", key=f"apply_sug_{i}"):
-                        st.success("✅ Suggestion applied! Regenerate to see changes.")
+                    if st.button(get_text('btn_apply_suggestion', lang).format(i), key=f"apply_sug_{i}"):
+                        st.success(get_text('analysis_suggestion_applied', lang))
 
 # ============================================
 # TAB 3: HISTORY & VERSIONS
