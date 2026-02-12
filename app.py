@@ -96,17 +96,28 @@ with st.sidebar:
     current_lang_name = lang_display_names.get(lang, 'English')
     default_index = language_options.index(current_lang_name) if current_lang_name in language_options else 0
     
+    # Store previous language to detect changes
+    if 'previous_language' not in st.session_state:
+        st.session_state.previous_language = lang
+    
     selected_language = st.selectbox(
         get_text('sidebar_language', lang),
         language_options,
         index=default_index,
-        help=get_text('sidebar_language_help', lang)
+        help=get_text('sidebar_language_help', lang),
+        key="language_selector"
     )
     
     # Update session state based on selection
     # Map display name back to language code
     lang_code_map = {v: k for k, v in lang_display_names.items()}
-    st.session_state.language = lang_code_map.get(selected_language, 'en')
+    new_language = lang_code_map.get(selected_language, 'en')
+    
+    # 🔥 CRITICAL FIX: Detect language change and force rerun
+    if new_language != st.session_state.previous_language:
+        st.session_state.language = new_language
+        st.session_state.previous_language = new_language
+        st.rerun()
     
     # Industry Selection
     industries = st.session_state.template_manager.get_industries()
