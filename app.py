@@ -685,32 +685,37 @@ with tab2:
 # TAB 3: HISTORY & VERSIONS
 # ============================================
 with tab3:
-    st.markdown("## 📚 History & Version Management")
+    lang = st.session_state.language  # Get current language for this tab
+    st.markdown(f"## {get_text('history_title', lang)}")
     
     version_mgr = st.session_state.version_manager
     all_versions = version_mgr.get_all_versions()
     
     if not all_versions:
-        st.info("💡 No saved letters yet. Generate and save your first letter!")
+        st.info(get_text('history_no_letters', lang))
     else:
-        st.success(f"✅ You have {len(all_versions)} saved letter(s)")
+        st.success(get_text('history_count', lang).format(len(all_versions)))
         
         # Search and filter
         col1, col2, col3 = st.columns([3, 2, 1])
         with col1:
             search_query = st.text_input(
-                "🔍 Search letters",
-                placeholder="Search by keywords, industry, etc."
+                get_text('history_search', lang),
+                placeholder=get_text('history_search_placeholder', lang)
             )
         with col2:
             filter_industry = st.selectbox(
-                "Filter by Industry",
-                ["All"] + st.session_state.template_manager.get_industries()
+                get_text('history_filter', lang),
+                [get_text('history_filter_all', lang)] + st.session_state.template_manager.get_industries()
             )
         with col3:
             sort_by = st.selectbox(
-                "Sort by",
-                ["Newest", "Oldest", "Score"]
+                get_text('history_sort', lang),
+                [
+                    get_text('history_sort_newest', lang),
+                    get_text('history_sort_oldest', lang),
+                    get_text('history_sort_score', lang)
+                ]
             )
         
         st.divider()
@@ -718,14 +723,18 @@ with tab3:
         # Display versions
         for idx, version in enumerate(all_versions):
             with st.expander(
-                f"📄 Letter #{idx + 1} - {version.get('timestamp', 'N/A')} - {version.get('metadata', {}).get('industry', 'General')}",
+                get_text('history_letter_title', lang).format(
+                    idx + 1,
+                    version.get('timestamp', 'N/A'),
+                    version.get('metadata', {}).get('industry', get_text('history_general', lang))
+                ),
                 expanded=False
             ):
                 col1, col2 = st.columns([3, 1])
                 
                 with col1:
                     st.text_area(
-                        "Content",
+                        get_text('history_content', lang),
                         value=version['content'],
                         height=200,
                         key=f"history_{idx}",
@@ -733,33 +742,33 @@ with tab3:
                     )
                 
                 with col2:
-                    st.markdown("**Metadata:**")
+                    st.markdown(f"**{get_text('history_metadata', lang)}:**")
                     metadata = version.get('metadata', {})
-                    st.caption(f"Industry: {metadata.get('industry', 'N/A')}")
-                    st.caption(f"Mode: {metadata.get('mode', 'N/A')}")
-                    st.caption(f"Template: {metadata.get('template', 'N/A')}")
+                    st.caption(f"{get_text('history_industry', lang)}: {metadata.get('industry', 'N/A')}")
+                    st.caption(f"{get_text('history_mode', lang)}: {metadata.get('mode', 'N/A')}")
+                    st.caption(f"{get_text('history_template', lang)}: {metadata.get('template', 'N/A')}")
                     
                     if 'score' in version:
-                        st.metric("Score", version['score'])
+                        st.metric(get_text('history_score', lang), version['score'])
                     
                     st.divider()
                     
-                    if st.button("🔄 Use as Template", key=f"use_template_{idx}"):
+                    if st.button(get_text('btn_use_template', lang), key=f"use_template_{idx}"):
                         st.session_state.template_content = version['content']
-                        st.success("✅ Loaded as template!")
+                        st.success(get_text('history_template_loaded', lang))
                     
-                    if st.button("📥 Download", key=f"download_{idx}"):
+                    if st.button(get_text('btn_download', lang), key=f"download_{idx}"):
                         st.download_button(
-                            "⬇️ Download",
+                            get_text('btn_download_action', lang),
                             version['content'],
                             file_name=f"cover_letter_{idx+1}.txt",
                             mime="text/plain",
                             key=f"dl_btn_{idx}"
                         )
                     
-                    if st.button("🗑️ Delete", key=f"delete_{idx}"):
+                    if st.button(get_text('btn_delete', lang), key=f"delete_{idx}"):
                         version_mgr.delete_version(idx)
-                        st.success("✅ Deleted!")
+                        st.success(get_text('history_deleted', lang))
                         st.rerun()
         
         st.divider()
@@ -767,13 +776,13 @@ with tab3:
         # Bulk actions
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("📥 Export All as ZIP"):
-                st.info("Exporting all letters...")
+            if st.button(get_text('btn_export_zip', lang)):
+                st.info(get_text('history_exporting', lang))
         with col2:
-            if st.button("🗑️ Clear All History"):
-                if st.checkbox("I'm sure I want to delete all letters"):
+            if st.button(get_text('btn_clear_history', lang)):
+                if st.checkbox(get_text('history_confirm_clear', lang)):
                     version_mgr.clear_all()
-                    st.success("✅ All history cleared!")
+                    st.success(get_text('history_cleared', lang))
                     st.rerun()
 
 # ============================================
