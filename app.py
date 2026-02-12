@@ -75,19 +75,19 @@ with col3:
 
 # --- SIDEBAR ---
 with st.sidebar:
-    st.markdown("### ⚙️ Configuration")
+    lang = st.session_state.language  # Get current language for sidebar
+    st.markdown(f"### {get_text('sidebar_config', lang)}")
     
     # Profile Quick View
     profile = st.session_state.profile_manager.get_profile()
     if profile and profile.get('name'):
-        st.info(f"👤 **{profile['name']}**\n{profile.get('email', '')}")
+        st.info(get_text('sidebar_profile_set', lang).format(profile['name'], profile.get('email', '')))
     else:
-        st.warning("👤 No profile set. Click Profile button to create one.")
+        st.warning(get_text('sidebar_no_profile', lang))
     
     st.divider()
     
     # Language Selection
-    lang = st.session_state.language  # Get current language
     lang_display_names = get_language_display_names()
     
     # Create list of language display names
@@ -111,32 +111,46 @@ with st.sidebar:
     # Industry Selection
     industries = st.session_state.template_manager.get_industries()
     selected_industry = st.selectbox(
-        "🏢 Industry",
+        get_text('sidebar_industry', lang),
         industries,
-        help="Select your target industry for optimized templates"
+        help=get_text('sidebar_industry_help', lang)
     )
     
     # Experience Level
     experience_level = st.selectbox(
-        "📊 Experience Level",
-        ["Entry Level", "Mid Level", "Senior Level", "Executive"],
-        help="Your experience level for tone adjustment"
+        get_text('sidebar_experience', lang),
+        [
+            get_text('exp_entry', lang),
+            get_text('exp_mid', lang),
+            get_text('exp_senior', lang),
+            get_text('exp_executive', lang)
+        ],
+        help=get_text('sidebar_experience_help', lang)
     )
     
     # Writing Mode
     writing_mode = st.selectbox(
-        "✍️ Writing Mode",
-        ["Professional & Formal", "Confident & Assertive", "Creative & Dynamic", 
-         "Technical & Precise", "Friendly & Approachable"],
-        help="Choose writing style that matches company culture"
+        get_text('sidebar_writing_mode', lang),
+        [
+            get_text('mode_professional', lang),
+            get_text('mode_confident', lang),
+            get_text('mode_creative', lang),
+            get_text('mode_technical', lang),
+            get_text('mode_friendly', lang)
+        ],
+        help=get_text('sidebar_writing_mode_help', lang)
     )
     
     # Letter Length
     letter_length = st.select_slider(
-        "📏 Letter Length",
-        options=["Concise (200-250)", "Standard (300-350)", "Detailed (400-500)"],
-        value="Standard (300-350)",
-        help="Adjust letter length to your needs"
+        get_text('sidebar_letter_length', lang),
+        options=[
+            get_text('length_concise', lang),
+            get_text('length_standard', lang),
+            get_text('length_detailed', lang)
+        ],
+        value=get_text('length_standard', lang),
+        help=get_text('sidebar_letter_length_help', lang)
     )
     
     st.divider()
