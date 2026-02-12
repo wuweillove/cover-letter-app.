@@ -96,17 +96,28 @@ with st.sidebar:
     current_lang_name = lang_display_names.get(lang, 'English')
     default_index = language_options.index(current_lang_name) if current_lang_name in language_options else 0
     
+    # Store previous language to detect changes
+    if 'previous_language' not in st.session_state:
+        st.session_state.previous_language = lang
+    
     selected_language = st.selectbox(
         get_text('sidebar_language', lang),
         language_options,
         index=default_index,
-        help=get_text('sidebar_language_help', lang)
+        help=get_text('sidebar_language_help', lang),
+        key="language_selector"
     )
     
     # Update session state based on selection
     # Map display name back to language code
     lang_code_map = {v: k for k, v in lang_display_names.items()}
-    st.session_state.language = lang_code_map.get(selected_language, 'en')
+    new_language = lang_code_map.get(selected_language, 'en')
+    
+    # 🔥 CRITICAL FIX: Detect language change and force rerun
+    if new_language != st.session_state.previous_language:
+        st.session_state.language = new_language
+        st.session_state.previous_language = new_language
+        st.rerun()
     
     # Industry Selection
     industries = st.session_state.template_manager.get_industries()
@@ -249,7 +260,7 @@ with tab1:
         with col1:
             st.markdown(f"**{get_text('create_step2_resume_label', lang)}**")
             resume_input = st.text_area(
-                get_text('create_step2_resume_content', lang) if 'create_step2_resume_content' in get_text.__code__.co_names else "Resume Content",
+                "Resume Content",
                 height=300,
                 placeholder=get_text('create_step2_resume_placeholder', lang),
                 help=get_text('create_step2_resume_help', lang),
@@ -264,9 +275,9 @@ with tab1:
             )
             
             if uploaded_resume:
-                st.info(f"📄 {get_text('create_step2_resume_file', lang) if 'create_step2_resume_file' in dir() else 'File'}: {uploaded_resume.name}")
+                st.info(get_text('create_step2_resume_file', lang).format(uploaded_resume.name))
             
-            st.caption(f"📊 {get_text('create_step2_resume_chars', lang) if 'create_step2_resume_chars' in dir() else 'Characters'}: {len(resume_input)}")
+            st.caption(get_text('create_step2_resume_chars', lang).format(len(resume_input)))
         
         with col2:
             st.markdown(f"**{get_text('create_step2_job_label', lang)}**")
