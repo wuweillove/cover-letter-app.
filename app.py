@@ -912,25 +912,33 @@ with tab4:
 # TAB 5: GUIDE & EXAMPLES
 # ============================================
 with tab5:
-    st.markdown("## 📖 Complete Guide & Examples")
+    lang = st.session_state.language  # Get current language for this tab
+    st.markdown(f"## {get_text('guide_title', lang)}")
     
-    guide_tabs = st.tabs(["Quick Start", "Best Practices", "Examples", "ATS Tips", "FAQ"])
+    guide_tabs = st.tabs([
+        get_text('guide_quickstart', lang),
+        get_text('guide_practices', lang),
+        get_text('guide_examples', lang),
+        get_text('guide_ats', lang),
+        get_text('guide_faq', lang)
+    ])
     
     with guide_tabs[0]:
-        st.markdown("""
-        ### 🚀 Quick Start Guide
-        
-        Complete guide content here...
-        """)
+        st.markdown(f"### {get_text('guide_quickstart_title', lang)}")
+        st.markdown(get_text('guide_quickstart_content', lang))
     
     with guide_tabs[1]:
-        st.markdown("### ✨ Best Practices")
+        st.markdown(f"### {get_text('guide_practices_title', lang)}")
+        st.markdown(get_text('guide_practices_content', lang))
     
     with guide_tabs[2]:
-        st.markdown("### 📚 Examples by Industry")
+        st.markdown(f"### {get_text('guide_examples_title', lang)}")
+        st.markdown(get_text('guide_examples_content', lang))
     
     with guide_tabs[3]:
-        st.markdown("### 🎯 ATS Tips")
+        st.markdown(f"### {get_text('guide_ats_title', lang)}")
+        st.markdown(get_text('guide_ats_content', lang))
     
     with guide_tabs[4]:
-        st.markdown("### ❓ FAQ")
+        st.markdown(f"### {get_text('guide_faq_title', lang)}")
+        st.markdown(get_text('guide_faq_content', lang))
