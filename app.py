@@ -789,89 +789,90 @@ with tab3:
 # TAB 4: PROFILE & SETTINGS
 # ============================================
 with tab4:
-    st.markdown("## 👤 Profile & Settings")
+    lang = st.session_state.language  # Get current language for this tab
+    st.markdown(f"## {get_text('profile_title', lang)}")
     
     profile_mgr = st.session_state.profile_manager
     current_profile = profile_mgr.get_profile()
     
     with st.form("profile_form"):
-        st.markdown("### Personal Information")
+        st.markdown(f"### {get_text('profile_personal_info', lang)}")
         
         col1, col2 = st.columns(2)
         
         with col1:
             name = st.text_input(
-                "Full Name *",
+                get_text('profile_name', lang),
                 value=current_profile.get('name', ''),
-                placeholder="John Doe"
+                placeholder=get_text('profile_name_placeholder', lang)
             )
             
             email = st.text_input(
-                "Email Address *",
+                get_text('profile_email', lang),
                 value=current_profile.get('email', ''),
-                placeholder="john.doe@email.com"
+                placeholder=get_text('profile_email_placeholder', lang)
             )
             
             phone = st.text_input(
-                "Phone Number",
+                get_text('profile_phone', lang),
                 value=current_profile.get('phone', ''),
-                placeholder="+1 (555) 123-4567"
+                placeholder=get_text('profile_phone_placeholder', lang)
             )
             
             location = st.text_input(
-                "Location",
+                get_text('profile_location', lang),
                 value=current_profile.get('location', ''),
-                placeholder="San Francisco, CA"
+                placeholder=get_text('profile_location_placeholder', lang)
             )
         
         with col2:
             linkedin = st.text_input(
-                "LinkedIn URL",
+                get_text('profile_linkedin', lang),
                 value=current_profile.get('linkedin', ''),
-                placeholder="https://linkedin.com/in/johndoe"
+                placeholder=get_text('profile_linkedin_placeholder', lang)
             )
             
             portfolio = st.text_input(
-                "Portfolio/Website",
+                get_text('profile_portfolio', lang),
                 value=current_profile.get('portfolio', ''),
-                placeholder="https://johndoe.com"
+                placeholder=get_text('profile_portfolio_placeholder', lang)
             )
             
             years_experience = st.number_input(
-                "Years of Experience",
+                get_text('profile_years_exp', lang),
                 min_value=0,
                 max_value=50,
                 value=current_profile.get('years_experience', 0)
             )
             
             current_title = st.text_input(
-                "Current/Recent Job Title",
+                get_text('profile_current_title', lang),
                 value=current_profile.get('current_title', ''),
-                placeholder="Senior Software Engineer"
+                placeholder=get_text('profile_current_title_placeholder', lang)
             )
         
-        st.markdown("### Professional Summary")
+        st.markdown(f"### {get_text('profile_summary', lang)}")
         professional_summary = st.text_area(
-            "Brief professional summary (optional)",
+            get_text('profile_summary_label', lang),
             value=current_profile.get('professional_summary', ''),
             height=100,
-            placeholder="A brief summary of your professional background...",
+            placeholder=get_text('profile_summary_placeholder', lang),
             label_visibility="collapsed"
         )
         
-        st.markdown("### Key Skills")
+        st.markdown(f"### {get_text('profile_skills', lang)}")
         key_skills = st.text_area(
-            "List your key skills (comma-separated)",
+            get_text('profile_skills_label', lang),
             value=current_profile.get('key_skills', ''),
-            placeholder="Python, JavaScript, Project Management, Leadership",
+            placeholder=get_text('profile_skills_placeholder', lang),
             label_visibility="collapsed"
         )
         
-        submitted = st.form_submit_button("💾 Save Profile", type="primary", use_container_width=True)
+        submitted = st.form_submit_button(get_text('btn_save_profile', lang), type="primary", use_container_width=True)
         
         if submitted:
             if not name or not email:
-                st.error("❌ Name and email are required!")
+                st.error(get_text('profile_error_required', lang))
             else:
                 profile_data = {
                     'name': name,
@@ -887,25 +888,25 @@ with tab4:
                 }
                 
                 profile_mgr.save_profile(profile_data)
-                st.success("✅ Profile saved successfully!")
+                st.success(get_text('profile_saved', lang))
                 st.balloons()
     
     st.divider()
     
     # Application Settings
-    st.markdown("### ⚙️ Application Settings")
+    st.markdown(f"### {get_text('settings_title', lang)}")
     
     col1, col2 = st.columns(2)
     
     with col1:
-        st.checkbox("🔔 Enable notifications", value=True)
-        st.checkbox("💾 Auto-save drafts", value=True)
-        st.checkbox("📊 Show advanced analytics", value=False)
+        st.checkbox(get_text('settings_notifications', lang), value=True)
+        st.checkbox(get_text('settings_autosave', lang), value=True)
+        st.checkbox(get_text('settings_analytics', lang), value=False)
     
     with col2:
-        st.checkbox("🎨 Enable animations", value=True)
-        st.checkbox("📧 Email export copies", value=False)
-        st.number_input("Default letter length (words)", min_value=200, max_value=500, value=350)
+        st.checkbox(get_text('settings_animations', lang), value=True)
+        st.checkbox(get_text('settings_email_copies', lang), value=False)
+        st.number_input(get_text('settings_letter_length', lang), min_value=200, max_value=500, value=350)
 
 # ============================================
 # TAB 5: GUIDE & EXAMPLES
