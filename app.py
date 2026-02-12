@@ -156,37 +156,37 @@ with st.sidebar:
     st.divider()
     
     # Statistics
-    st.markdown("### 📊 Statistics")
+    st.markdown(f"### {get_text('sidebar_statistics', lang)}")
     col1, col2 = st.columns(2)
     with col1:
-        st.metric("Letters", len(st.session_state.version_manager.get_all_versions()))
+        st.metric(get_text('sidebar_letters', lang), len(st.session_state.version_manager.get_all_versions()))
     with col2:
-        st.metric("Versions", len(st.session_state.generated_versions))
+        st.metric(get_text('sidebar_versions', lang), len(st.session_state.generated_versions))
     
     st.divider()
     
     # Quick Tips
-    with st.expander("💡 Pro Tips"):
-        st.markdown("""
-        **For Best Results:**
-        - Complete your profile first
-        - Use industry-specific templates
-        - Review ATS score > 80%
-        - Compare A/B versions
-        - Export with company branding
+    with st.expander(get_text('sidebar_pro_tips', lang)):
+        st.markdown(f"""
+        {get_text('tips_title', lang)}
+        {get_text('tips_1', lang)}
+        {get_text('tips_2', lang)}
+        {get_text('tips_3', lang)}
+        {get_text('tips_4', lang)}
+        {get_text('tips_5', lang)}
         """)
     
     # Success Stories
-    with st.expander("⭐ Success Stories"):
-        st.markdown("""
-        *"Got 3 interviews in 1 week!"*
-        - Sarah M., Software Engineer
+    with st.expander(get_text('sidebar_success_stories', lang)):
+        st.markdown(f"""
+        {get_text('story_1_quote', lang)}
+        {get_text('story_1_author', lang)}
         
-        *"ATS score went from 45% to 92%"*
-        - James T., Marketing Manager
+        {get_text('story_2_quote', lang)}
+        {get_text('story_2_author', lang)}
         
-        *"Professional export saved me hours"*
-        - Lisa K., Product Designer
+        {get_text('story_3_quote', lang)}
+        {get_text('story_3_author', lang)}
         """)
 
 # --- PROGRESS INDICATOR ---
