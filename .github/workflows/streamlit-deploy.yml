@@ -1,0 +1,43 @@
+# Streamlit Cloud Auto-Deployment Trigger
+# This workflow triggers a notification when changes are pushed to main branch
+# Streamlit Cloud will automatically redeploy if connected to this repository
+
+name: Streamlit Cloud Deploy Trigger
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'app.py'
+      - 'utils/**'
+      - 'requirements.txt'
+      - '.streamlit/**'
+
+jobs:
+  notify-deployment:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Deployment notification
+      run: |
+        echo "🚀 Changes detected in main branch"
+        echo "📝 Files changed:"
+        git diff --name-only HEAD^ HEAD
+        echo ""
+        echo "✅ If connected to Streamlit Cloud, auto-deployment will begin"
+        echo "🌐 Your app will be redeployed automatically within 2-3 minutes"
+        echo ""
+        echo "📊 Latest commit:"
+        git log -1 --pretty=format:"%h - %s (%an, %ar)"
+        echo ""
+        echo "🔗 Monitor deployment at: https://share.streamlit.io/"
+        
+    - name: Create deployment badge
+      run: |
+        echo "![Deployment](https://img.shields.io/badge/deployment-triggered-success)" > deployment-status.txt
+        echo "Last deployed: $(date)" >> deployment-status.txt
+        cat deployment-status.txt
