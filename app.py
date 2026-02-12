@@ -16,6 +16,7 @@ from utils.pdf_exporter import PDFExporter
 from utils.scoring import LetterScorer
 from utils.ai_generator import AIGenerator
 from utils.version_manager import VersionManager
+from utils.translations import get_text, get_language_display_names
 import datetime
 import time
 
