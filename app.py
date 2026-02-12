@@ -421,20 +421,20 @@ with tab1:
                     st.rerun()
     
     # STEP 5: Review & Export
-    with st.expander("### 5️⃣ Review & Export", expanded=current_step==5):
+    with st.expander(get_text('create_step5_title', lang), expanded=current_step==5):
         if st.session_state.generated_versions:
-            st.success(f"✅ {len(st.session_state.generated_versions)} version(s) ready for review!")
+            st.success(get_text('create_step5_ready', lang).format(len(st.session_state.generated_versions)))
             
             # Version selector
             if len(st.session_state.generated_versions) > 1:
-                st.markdown("**📊 Compare Versions (A/B Testing)**")
+                st.markdown(f"**{get_text('create_step5_compare', lang)}**")
                 cols = st.columns(len(st.session_state.generated_versions))
                 
                 for idx, (col, version) in enumerate(zip(cols, st.session_state.generated_versions)):
                     with col:
-                        st.markdown(f"**Version {version['version']}**")
+                        st.markdown(f"**{get_text('create_step5_version', lang)} {version['version']}**")
                         st.text_area(
-                            f"Version {version['version']}",
+                            f"{get_text('create_step5_version', lang)} {version['version']}",
                             value=version['content'],
                             height=300,
                             key=f"version_{idx}",
@@ -443,35 +443,35 @@ with tab1:
                         
                         # Quick stats
                         word_count = len(version['content'].split())
-                        st.caption(f"📊 {word_count} words")
+                        st.caption(get_text('create_step5_words', lang).format(word_count))
                         
                         # Select button
-                        if st.button(f"✅ Select This Version", key=f"select_v{idx}"):
+                        if st.button(get_text('btn_select_version', lang), key=f"select_v{idx}"):
                             st.session_state.selected_version = idx
-                            st.success("Selected!")
+                            st.success(get_text('create_step5_selected', lang))
             else:
                 selected_version = st.session_state.generated_versions[0]
                 edited_letter = st.text_area(
-                    "Your Cover Letter",
+                    get_text('create_step5_your_letter', lang),
                     value=selected_version['content'],
                     height=400,
-                    help="You can edit the letter directly here"
+                    help=get_text('create_step5_edit_help', lang)
                 )
                 st.session_state.final_letter = edited_letter
                 
                 word_count = len(edited_letter.split())
-                st.info(f"📊 Word count: {word_count} words")
+                st.info(get_text('create_step5_word_count', lang).format(word_count))
             
             st.divider()
             
             # Export options
-            st.markdown("### 📤 Export Options")
+            st.markdown(f"### {get_text('create_step5_export', lang)}")
             
             col1, col2, col3, col4 = st.columns(4)
             
             with col1:
-                if st.button("📄 Download PDF", use_container_width=True, type="primary"):
-                    with st.spinner("Creating PDF..."):
+                if st.button(get_text('btn_download_pdf', lang), use_container_width=True, type="primary"):
+                    with st.spinner(get_text('create_step5_creating_pdf', lang)):
                         pdf_exporter = PDFExporter()
                         pdf_data = pdf_exporter.create_pdf(
                             content=st.session_state.get('final_letter', st.session_state.generated_versions[0]['content']),
@@ -479,22 +479,22 @@ with tab1:
                             branding=True
                         )
                         st.download_button(
-                            "⬇️ Download PDF",
+                            get_text('btn_download_pdf_action', lang),
                             pdf_data,
                             file_name="cover_letter.pdf",
                             mime="application/pdf"
                         )
             
             with col2:
-                if st.button("📝 Download Word", use_container_width=True):
-                    st.info("Word export feature coming soon!")
+                if st.button(get_text('btn_download_word', lang), use_container_width=True):
+                    st.info(get_text('create_step5_word_coming_soon', lang))
             
             with col3:
-                if st.button("📋 Copy to Clipboard", use_container_width=True):
-                    st.success("✅ Use Ctrl+C to copy from the text area above")
+                if st.button(get_text('btn_copy_clipboard', lang), use_container_width=True):
+                    st.success(get_text('create_step5_copy_instruction', lang))
             
             with col4:
-                if st.button("💾 Save to History", use_container_width=True):
+                if st.button(get_text('btn_save_history', lang), use_container_width=True):
                     version_mgr = st.session_state.version_manager
                     version_mgr.save_version(
                         content=st.session_state.get('final_letter', st.session_state.generated_versions[0]['content']),
@@ -504,9 +504,9 @@ with tab1:
                             'template': st.session_state.get('template', 'Standard')
                         }
                     )
-                    st.success("✅ Saved to history!")
+                    st.success(get_text('create_step5_saved', lang))
         else:
-            st.info("💡 Generate a letter first to see it here!")
+            st.info(get_text('create_step5_no_letter', lang))
 
 # ============================================
 # TAB 2: ANALYSIS & SCORING
