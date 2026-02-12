@@ -226,18 +226,19 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 # TAB 1: CREATE LETTER
 # ============================================
 with tab1:
-    st.markdown("## Step-by-Step Letter Creation")
+    lang = st.session_state.language  # Get current language for this tab
+    st.markdown(f"## {get_text('create_title', lang)}")
     
     # STEP 1: Profile Check
-    with st.expander("### 1️⃣ Profile Information", expanded=current_step==1):
+    with st.expander(get_text('create_step1_title', lang), expanded=current_step==1):
         if not profile or not profile.get('name'):
-            st.warning("⚠️ Please complete your profile in the 'Profile & Settings' tab first!")
-            if st.button("Go to Profile", key="goto_profile"):
+            st.warning(get_text('create_step1_warning', lang))
+            if st.button(get_text('btn_go_to_profile', lang), key="goto_profile"):
                 st.session_state.current_step = 4
                 st.rerun()
         else:
-            st.success(f"✅ Profile ready: {profile['name']}")
-            if st.button("Continue to Input →", key="step1_continue"):
+            st.success(get_text('create_step1_success', lang).format(profile['name']))
+            if st.button(get_text('btn_continue', lang).format(get_text('step_input', lang)), key="step1_continue"):
                 st.session_state.current_step = 2
                 st.rerun()
     
